@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASAR — Ideas that create Impact</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --color-bg: #F5E0CD;
+      --color-burgundy-dark: #320B10;
+      --color-burgundy: #5A0A14;
+      --color-burgundy-btn: #6B0F1A;
+      --color-burgundy-hover: #48070F;
+      --color-border-nav: rgba(120, 40, 40, 0.15);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-script: 'Pinyon Script', cursive;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-color: var(--color-bg);
+      font-family: var(--font-sans);
+      color: var(--color-burgundy-dark);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Main Hero Viewport (Reference canvas: 1554 x 1012 px) */
+    .hero-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      min-height: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow: hidden;
+      background-color: #F4DFCE;
+    }
+
+    /* Layer 1: Photorealistic Horizon & Landscape Plate */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('hero_bg.jpg'), url('public/images/hero_bg.jpg');
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Layer 2: Atmospheric Vignette */
+    .hero-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 85% 65% at 50% 50%, transparent 60%, rgba(65, 18, 22, 0.15) 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Layer 3: Dynamic Animated Vortex Canvas (Canvas 2D, Pure Maroon) */
+    #vortexCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* Layer 5: Top Navbar (Height: 72px, Fixed / Absolute) */
+    .navbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 52px;
+      border-bottom: 1px solid var(--color-border-nav);
+      z-index: 50;
+    }
+
+    /* ASAR Logo (Left: 52px) */
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .logo-mark {
+      width: 28px;
+      height: 28px;
+      display: block;
+      color: #5A0B16;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: 0.35em;
+      color: #5A0B16;
+      line-height: 1;
+      margin-left: 2px;
+      user-select: none;
+    }
+
+    /* Center Nav Links (Centered at x = 730px, Width: ~519px) */
+    .nav-center {
+      position: absolute;
+      left: 730px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      list-style: none;
+      gap: 42px;
+    }
+
+    .nav-item {
+      position: relative;
+    }
+
+    .nav-link {
+      font-size: 15px;
+      font-weight: 400;
+      color: #4A1A1A;
+      text-decoration: none;
+      transition: color 0.2s ease;
+      display: inline-block;
+      padding: 6px 0;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover {
+      color: var(--color-burgundy);
+    }
+
+    .nav-item.active .nav-link {
+      color: #350A12;
+      font-weight: 400;
+    }
+
+    .active-dot {
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      background-color: #5A0B16;
+      border-radius: 50%;
+    }
+
+    /* Top Right Pill Button (Right: 52px) */
+    .nav-btn {
+      background-color: var(--color-burgundy);
+      color: #FFFFFF;
+      font-size: 13.5px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 11px 24px;
+      border-radius: 9999px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.22s ease;
+      box-shadow: 0 2px 8px rgba(90, 10, 20, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .nav-btn:hover {
+      background-color: var(--color-burgundy-hover);
+      transform: translateY(-1.5px);
+      box-shadow: 0 4px 14px rgba(90, 10, 20, 0.32);
+    }
+
+    /* Mobile Hamburger Menu */
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-burgundy);
+      padding: 8px;
+    }
+
+    /* Hero Center Typography & Action Area */
+    .hero-content {
+      position: relative;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-top: 351px;
+      width: 100%;
+      max-width: 1200px;
+      padding: 0 20px;
+    }
+
+    /* Headline Line 1: "Ideas that create" */
+    .headline-sans {
+      font-family: var(--font-sans);
+      font-size: 79.5px;
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      color: #320B10;
+      line-height: 0.96;
+      margin: 0;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    /* Headline Line 2: "Impact" */
+    .headline-script {
+      font-family: var(--font-script);
+      font-size: 239px;
+      font-weight: 400;
+      line-height: 0.70;
+      color: #550913;
+      margin-top: -24px;
+      margin-bottom: 0;
+      letter-spacing: 0;
+      user-select: none;
+      background: linear-gradient(180deg, #500812 0%, #70131E 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      padding-bottom: 6px;
+      white-space: nowrap;
+    }
+
+    /* Subtitle Description */
+    .hero-subtext {
+      font-family: var(--font-sans);
+      font-size: 19px;
+      font-weight: 400;
+      color: #431E22;
+      line-height: 1.42;
+      max-width: 585px;
+      margin-top: 20px;
+      margin-bottom: 29px;
+      text-align: center;
+      letter-spacing: -0.005em;
+    }
+
+    /* Action Buttons Row */
+    .hero-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 21px;
+    }
+
+    .btn-primary {
+      background-color: var(--color-burgundy-btn);
+      color: #FFFFFF;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      width: 192px;
+      height: 48px;
+      border-radius: 9999px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease-in-out;
+      box-shadow: 0 4px 14px rgba(90, 10, 20, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--color-burgundy-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(90, 10, 20, 0.35);
+    }
+
+    .btn-secondary {
+      background-color: rgba(255, 240, 235, 0.18);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1.5px solid #5A0A14;
+      color: #5A0A14;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      width: 178px;
+      height: 48px;
+      border-radius: 9999px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 240, 235, 0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(90, 10, 20, 0.2);
+    }
+
+    .play-icon {
+      display: inline-block;
+      width: 0;
+      height: 0;
+      border-top: 4.5px solid transparent;
+      border-bottom: 4.5px solid transparent;
+      border-left: 7.5px solid #5A0A14;
+      margin-left: 1px;
+    }
+
+    /* Responsive Queries */
+    @media (max-width: 1280px) {
+      .navbar {
+        padding: 0 32px;
+      }
+      .nav-center {
+        position: static;
+        transform: none;
+      }
+      .nav-links {
+        gap: 24px;
+      }
+      .hero-content {
+        margin-top: clamp(240px, 32vh, 351px);
+      }
+      .headline-sans {
+        font-size: clamp(48px, 5.2vw, 79.5px);
+        white-space: normal;
+      }
+      .headline-script {
+        font-size: clamp(120px, 14.5vw, 239px);
+        margin-top: clamp(-10px, -1.2vw, -24px);
+      }
+      .hero-subtext {
+        font-size: clamp(15px, 1.3vw, 19px);
+        max-width: clamp(460px, 45vw, 585px);
+      }
+    }
+
+    @media (max-width: 868px) {
+      .navbar {
+        height: 64px;
+        padding: 0 20px;
+      }
+      .nav-center, .nav-btn {
+        display: none;
+      }
+      .mobile-menu-btn {
+        display: block;
+      }
+      .hero-content {
+        margin-top: 180px;
+      }
+      .headline-sans {
+        font-size: clamp(34px, 8.5vw, 52px);
+      }
+      .headline-script {
+        font-size: clamp(90px, 20vw, 130px);
+        margin-top: -8px;
+      }
+      .hero-subtext {
+        font-size: 15px;
+        padding: 0 10px;
+        margin-top: 16px;
+        margin-bottom: 28px;
+      }
+      .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+        max-width: 280px;
+        gap: 14px;
+      }
+      .btn-primary, .btn-secondary {
+        width: 100%;
+      }
+    }
+
+    /* Mobile Menu Drawer */
+    .mobile-drawer {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(246, 227, 208, 0.98);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+    }
+
+    .mobile-drawer.open {
+      display: flex;
+    }
+
+    .mobile-drawer a {
+      font-size: 24px;
+      color: #350A12;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .close-drawer-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 28px;
+      background: none;
+      border: none;
+      color: #350A12;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero-container" id="hero">
+    
+    <!-- 1. Photorealistic Atmospheric Plate -->
+    <div class="hero-bg" aria-hidden="true"></div>
+
+    <!-- 2. Subtle Atmospheric Vignette -->
+    <div class="hero-vignette" aria-hidden="true"></div>
+
+    <!-- 3. Dynamic Animated Vortex Canvas -->
+    <canvas id="vortexCanvas"></canvas>
+
+    <!-- 5. Top Navbar -->
+    <header class="navbar">
+      <!-- Logo (Left) -->
+      <a href="#" class="logo-container" aria-label="ASAR Home">
+        <svg class="logo-mark" viewBox="0 0 36 36" fill="currentColor">
+          <path d="M19.5 2.5 C19.5 2.5 25.5 15.5 33.5 32.5 C31.5 32.8 28.5 31.0 25.0 24.5 C21.5 17.5 19.5 9.5 19.0 2.5 Z" />
+          <path d="M4.0 32.5 C6.5 28.5 11.5 22.0 19.0 19.5 C16.5 20.5 12.0 22.5 7.5 26.5 C5.5 28.5 4.5 30.5 4.0 32.5 Z" />
+          <path d="M14.0 21.0 C16.5 16.5 18.5 10.0 19.5 2.5 C17.5 7.5 14.5 14.5 11.5 21.0 Z" opacity="0.9" />
+        </svg>
+        <span class="logo-text">ASAR</span>
+      </a>
+
+      <!-- Center Nav Links -->
+      <nav class="nav-center" aria-label="Primary Navigation">
+        <ul class="nav-links">
+          <li class="nav-item active">
+            <a href="#" class="nav-link">Home</a>
+            <span class="active-dot"></span>
+          </li>
+          <li class="nav-item">
+            <a href="#about" class="nav-link">About</a>
+          </li>
+          <li class="nav-item">
+            <a href="#services" class="nav-link">Services</a>
+          </li>
+          <li class="nav-item">
+            <a href="#work" class="nav-link">Work</a>
+          </li>
+          <li class="nav-item">
+            <a href="#why-us" class="nav-link">Why Us</a>
+          </li>
+          <li class="nav-item">
+            <a href="#contact" class="nav-link">Contact</a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Right Action Button -->
+      <a href="#contact" class="nav-btn">
+        LET'S BUILD &rarr;
+      </a>
+
+      <!-- Mobile Hamburger Button -->
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Mobile Drawer -->
+    <div class="mobile-drawer" id="mobileDrawer">
+      <button class="close-drawer-btn" id="closeDrawerBtn">&times;</button>
+      <a href="#">Home</a>
+      <a href="#about">About</a>
+      <a href="#services">Services</a>
+      <a href="#work">Work</a>
+      <a href="#why-us">Why Us</a>
+      <a href="#contact">Contact</a>
+      <a href="#contact" class="btn-primary" style="margin-top: 16px;">LET'S BUILD &rarr;</a>
+    </div>
+
+    <!-- 6. Hero Typography & Buttons -->
+    <main class="hero-content">
+      <h1 class="headline-sans">Ideas that create</h1>
+      <div class="headline-script">Impact</div>
+      <p class="hero-subtext">
+        A creative and tech company crafting brands, digital experiences<br>
+        and custom solutions for a bolder tomorrow.
+      </p>
+      <div class="hero-buttons">
+        <a href="#contact" class="btn-primary">
+          LET'S BUILD &rarr;
+        </a>
+        <a href="#work" class="btn-secondary">
+          OUR WORK <span class="play-icon" aria-hidden="true"></span>
+        </a>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Vortex Animation Script -->
+  <script>
+    (function() {
+      'use strict';
+
+      const canvas = document.getElementById('vortexCanvas');
+      const ctx = canvas.getContext('2d');
+      const container = document.getElementById('hero');
+
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Mouse Parallax (5-10px displacement)
+      let mouseX = 0.5;
+      let mouseY = 0.5;
+      let targetParallaxX = 0;
+      let targetParallaxY = 0;
+      let parallaxX = 0;
+      let parallaxY = 0;
+
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX / window.innerWidth;
+        mouseY = e.clientY / window.innerHeight;
+        targetParallaxX = (mouseX - 0.5) * 10;
+        targetParallaxY = (mouseY - 0.5) * 6;
+      });
+
+      // Canvas Resizing & Device Pixel Ratio
+      let width = 0;
+      let height = 0;
+      let dpr = 1;
+
+      function resize() {
+        width = container.clientWidth || window.innerWidth;
+        height = container.clientHeight || window.innerHeight;
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      // STRICT MAROON / BURGUNDY PALETTE (PURE MAROON, THIN FILAMENTS)
+      const MAROON_PALETTE = [
+        { r: 117, g: 20, b: 35 }, // #751423 Primary Deep Maroon
+        { r: 100, g: 16, b: 29 }, // #64101D Deep Burgundy
+        { r: 90,  g: 15, b: 25 }, // #5A0F19 Dark Wine Maroon
+        { r: 138, g: 38, b: 52 }, // #8A2634 Crimson Maroon
+        { r: 154, g: 58, b: 69 }  // #9A3A45 Subtle Warm Maroon Accent
+      ];
+
+      let isMobile = false;
+      let strands = [];
+      let particles = [];
+
+      function initSystem() {
+        isMobile = width < 768;
+        const strandCount = isMobile ? 420 : 760;
+        const particleCount = isMobile ? 500 : 1200;
+
+        strands = [];
+        for (let s = 0; s < strandCount; s++) {
+          const baseAngle = (s / strandCount) * Math.PI * 2;
+          const color = MAROON_PALETTE[s % MAROON_PALETTE.length];
+          const alpha = isMobile ? (0.42 + ((s * 7) % 15) * 0.02) : (0.36 + ((s * 7) % 15) * 0.02);
+          const lineWidth = isMobile ? 0.65 : (0.75 + ((s * 5) % 9) * 0.04);
+          const radScale = 0.94 + ((s * 13) % 21) * 0.006;
+          const twistMult = 0.96 + ((s * 11) % 17) * 0.005;
+
+          const vMin = -1.04 - 0.06 * Math.sin(s * 2.3);
+          const vMax = 1.04 + 0.06 * Math.cos(s * 1.9);
+
+          strands.push({
+            baseAngle,
+            color,
+            alpha,
+            lineWidth,
+            radScale,
+            twistMult,
+            vMin,
+            vMax
+          });
+        }
+
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+          const strandIndex = i % strandCount;
+          const baseV = -0.98 + (i / particleCount) * 1.96;
+          const speed = 0.035 + ((i * 11) % 13) * 0.003;
+          const isAccent = (i % 5 === 0);
+          const twinkleFreq = 1.8 + ((i * 7) % 11) * 0.25;
+          const twinklePhase = ((i * 23) % 100) * 0.0628;
+          const size = isAccent ? 0.95 : 1.15;
+
+          particles.push({
+            strandIndex,
+            baseV,
+            speed,
+            isAccent,
+            twinkleFreq,
+            twinklePhase,
+            size
+          });
+        }
+      }
+
+      function resize() {
+        width = container.clientWidth || window.innerWidth;
+        height = container.clientHeight || window.innerHeight;
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        initSystem();
+      }
+
+      window.addEventListener('resize', resize, { passive: true });
+      resize();
+
+      function getVortexPoint(v, angle, radScale, cx, cyWaist, canvasW, canvasH) {
+        let waistR, topR, bottomR;
+
+        if (isMobile) {
+          const mScale = canvasW / 390.0;
+          waistR = 48 * mScale * radScale;
+          topR = 215 * mScale * radScale;
+          bottomR = 235 * mScale * radScale;
+        } else {
+          const dScale = Math.min(canvasW / 1554, canvasH / 1012);
+          waistR = 102 * dScale * radScale;
+          topR = 690 * dScale * radScale;
+          bottomR = 720 * dScale * radScale;
+        }
+
+        let y, r;
+        if (v <= 0) {
+          const normV = Math.abs(v);
+          y = cyWaist - normV * (cyWaist + 30);
+          r = waistR + (topR - waistR) * Math.pow(normV, 1.76);
+        } else {
+          const normV = v;
+          y = cyWaist + normV * (canvasH - cyWaist + 30);
+          r = waistR + (bottomR - waistR) * Math.pow(normV, 1.76);
+        }
+
+        const tilt = isMobile ? 0.08 : 0.10;
+        const x3d = r * Math.cos(angle);
+        const z3d = r * Math.sin(angle);
+
+        return {
+          x: cx + x3d,
+          y: y + z3d * tilt,
+          z: z3d,
+          r: r
+        };
+      }
+
+      let lastTime = performance.now();
+      let animTime = 0;
+      let isVisible = true;
+      let animationFrameId;
+
+      document.addEventListener('visibilitychange', () => {
+        isVisible = (document.visibilityState === 'visible');
+      });
+
+      const OMEGA = (2 * Math.PI) / 30.0;
+
+      function render(currentTime) {
+        animationFrameId = requestAnimationFrame(render);
+        if (!isVisible || !ctx) return;
+
+        const delta = Math.min((currentTime - lastTime) / 1000, 0.1);
+        lastTime = currentTime;
+
+        if (!prefersReducedMotion) {
+          animTime += delta;
+        } else {
+          animTime = 5.0;
+        }
+
+        parallaxX += (targetParallaxX - parallaxX) * 0.05;
+        parallaxY += (targetParallaxY - parallaxY) * 0.05;
+
+        ctx.clearRect(0, 0, width, height);
+
+        const cx = width * 0.5 + parallaxX;
+        const cyWaist = height * 0.44 + parallaxY;
+
+        ctx.globalCompositeOperation = 'source-over';
+
+        const rotAngle = animTime * OMEGA;
+        const pointsPerStrand = isMobile ? 44 : 58;
+
+        const strandLen = strands.length;
+        for (let s = 0; s < strandLen; s++) {
+          const strand = strands[s];
+          const phi = strand.baseAngle + rotAngle;
+          const c = strand.color;
+
+          ctx.beginPath();
+
+          const vRange = strand.vMax - strand.vMin;
+          for (let p = 0; p <= pointsPerStrand; p++) {
+            const t = p / pointsPerStrand;
+            const v = strand.vMin + t * vRange;
+            const twist = (3.0 * v + 0.9 * Math.tanh(2.8 * v)) * strand.twistMult;
+            const angle = phi + twist;
+            const pt = getVortexPoint(v, angle, strand.radScale, cx, cyWaist, width, height);
+
+            if (p === 0) {
+              ctx.moveTo(pt.x, pt.y);
+            } else {
+              ctx.lineTo(pt.x, pt.y);
+            }
+          }
+
+          ctx.strokeStyle = `rgba(${c.r}, ${c.g}, ${c.b}, ${strand.alpha})`;
+          ctx.lineWidth = strand.lineWidth;
+          ctx.stroke();
+        }
+
+        const partLen = particles.length;
+        for (let i = 0; i < partLen; i++) {
+          const p = particles[i];
+          const strand = strands[p.strandIndex];
+          if (!strand) continue;
+
+          const flowProg = !prefersReducedMotion ? p.speed * animTime : 0;
+          const rawV = ((p.baseV + flowProg + 1.0) % 2.0) - 1.0;
+          const v = rawV < -1.0 ? rawV + 2.0 : rawV;
+
+          const phi = strand.baseAngle + rotAngle;
+          const twist = (3.0 * v + 0.9 * Math.tanh(2.8 * v)) * strand.twistMult;
+          const angle = phi + twist;
+          const pt = getVortexPoint(v, angle, strand.radScale, cx, cyWaist, width, height);
+
+          const depthFactor = (pt.z / Math.max(1, pt.r)) * 0.45 + 0.55;
+          const twinkle = 0.55 + 0.45 * Math.sin(animTime * p.twinkleFreq + p.twinklePhase);
+          const alpha = twinkle * depthFactor * (p.isAccent ? 0.85 : 0.70);
+
+          if (alpha > 0.12) {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, p.size, 0, Math.PI * 2);
+
+            if (p.isAccent) {
+              ctx.fillStyle = `rgba(255, 245, 235, ${alpha * 0.9})`;
+            } else {
+              ctx.fillStyle = `rgba(138, 38, 52, ${alpha * 0.8})`;
+            }
+
+            ctx.fill();
+          }
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(render);
+
+      // Mobile Drawer
+      const mobileBtn = document.getElementById('mobileMenuBtn');
+      const closeBtn = document.getElementById('closeDrawerBtn');
+      const drawer = document.getElementById('mobileDrawer');
+
+      if (mobileBtn && closeBtn && drawer) {
+        mobileBtn.addEventListener('click', () => drawer.classList.add('open'));
+        closeBtn.addEventListener('click', () => drawer.classList.remove('open'));
+      }
+
+    })();
+  </script>
+</body>
+</html>

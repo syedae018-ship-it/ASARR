@@ -1,0 +1,272 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #F3EEE5;
+  --color-foreground: #171515;
+  --color-primary: #751423;
+  --color-primary-hover: #5A0E1A;
+  --color-primary-light: #FAF0F1;
+  --color-secondary: #E8E1D7;
+  --color-secondary-light: #F3EEE5;
+  --color-muted: #8B8682;
+  --color-muted-light: #CFC5BA;
+  --color-dark-surface: #151414;
+  --color-dark-card: #1E1D1D;
+  --color-white: #FFFFFF;
+  
+  --font-sans: var(--font-sans), 'Manrope', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-display), 'Anton', 'Impact', sans-serif;
+  --font-condensed: var(--font-display), 'Anton', 'Impact', sans-serif;
+  --font-serif: var(--font-serif), 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-mono: var(--font-mono), 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-script: var(--font-script), 'Pinyon Script', cursive;
+
+  --shadow-subtle: 0 4px 20px -2px rgba(23, 21, 21, 0.04);
+  --shadow-card: 0 12px 32px -8px rgba(23, 21, 21, 0.08);
+  --shadow-elevated: 0 24px 48px -12px rgba(23, 21, 21, 0.12);
+  --shadow-glow-primary: 0 0 30px -5px rgba(117, 20, 35, 0.3);
+}
+
+@layer base {
+  :root {
+    --background: #F3EEE5;
+    --foreground: #171515;
+    --primary: #751423;
+    --primary-hover: #5A0E1A;
+    --secondary: #E8E1D7;
+    --muted: #8B8682;
+  }
+
+  * {
+    border-color: rgba(23, 21, 21, 0.08);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    overflow-x: clip;
+    min-height: 100vh;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background-color: rgba(117, 20, 35, 0.2);
+    color: #751423;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* LEVEL 01 & 02: Primary Display (Anton) */
+  .font-display {
+    font-family: var(--font-display), 'Anton', sans-serif;
+  }
+  .font-condensed {
+    font-family: var(--font-display), 'Anton', sans-serif;
+  }
+
+  /* LEVEL 03: Editorial Serif (Cormorant Garamond) */
+  .font-serif {
+    font-family: var(--font-serif), 'Cormorant Garamond', Georgia, serif;
+  }
+
+  /* LEVEL 04: Modern Geometric Sans Body (Manrope) */
+  .font-sans {
+    font-family: var(--font-sans), 'Manrope', sans-serif;
+  }
+
+  /* LEVEL 05: Technical Monospace Annotation (IBM Plex Mono) */
+  .font-mono {
+    font-family: var(--font-mono), 'IBM Plex Mono', monospace;
+  }
+
+  /* Luxury Calligraphic Script Accent (Used sparingly, max 1-2 across site) */
+  .font-script {
+    font-family: var(--font-script), 'Pinyon Script', cursive;
+  }
+
+  .script-accent {
+    font-family: var(--font-script), 'Pinyon Script', cursive;
+    font-weight: 400;
+    font-style: normal;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    font-size: 1.25em;
+    line-height: 0.85;
+    display: inline-block;
+    padding-left: 0.12em;
+    padding-right: 0.15em;
+    vertical-align: baseline;
+  }
+
+  /* Section & Container Rhythm */
+  .section-container {
+    width: 100%;
+    max-width: 80rem; /* 1280px */
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .section-container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .section-container {
+      padding-left: 3rem;
+      padding-right: 3rem;
+    }
+  }
+
+  /* Standardized Typography Clamps */
+  .heading-display {
+    font-size: clamp(2.75rem, 8vw, 6.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+  }
+
+  .heading-h1 {
+    font-size: clamp(2.5rem, 6.5vw, 5rem);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+  }
+
+  .heading-h2 {
+    font-size: clamp(2rem, 5vw, 3.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  .heading-h3 {
+    font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .eyebrow-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  /* Button Primitives */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.875rem 2rem;
+    border-radius: 9999px;
+    background-color: var(--color-primary);
+    color: #FFFFFF;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: 48px;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(117, 20, 35, 0.25);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.875rem 2rem;
+    border-radius: 9999px;
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: 48px;
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-primary);
+    color: #FFFFFF;
+    transform: translateY(-2px);
+  }
+
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.875rem 2rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(28, 26, 26, 0.15);
+    background-color: transparent;
+    color: var(--color-foreground);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: 48px;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background-color: rgba(117, 20, 35, 0.04);
+  }
+
+  /* Card Primitives */
+  .editorial-card {
+    background-color: #FFFFFF;
+    border-radius: 1rem;
+    border: 1px solid rgba(28, 26, 26, 0.06);
+    box-shadow: var(--shadow-subtle);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .editorial-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card);
+    border-color: rgba(117, 20, 35, 0.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
