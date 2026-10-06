@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCursorStore } from '@/components/ui/CustomCursor';
@@ -73,7 +72,6 @@ const folderProjects: ProjectFolderData[] = [
 ];
 
 export function SelectedWork() {
-  const [featuredId, setFeaturedId] = useState<string>('p1');
   const setVariant = useCursorStore((state) => state.setVariant);
 
   return (
@@ -114,97 +112,52 @@ export function SelectedWork() {
         </div>
 
         {/* ========================================================= */}
-        {/* 3. EXACT 2 ROWS × 3 COLUMNS PHYSICAL ARCHIVE GRID         */}
+        {/* 3. REFINED EDITORIAL ARCHIVE GRID                         */}
         {/* ========================================================= */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 w-full">
           {folderProjects.map((project) => {
-            const isFeatured = featuredId === project.id;
-
             return (
               <div
                 key={project.id}
                 onMouseEnter={() => setVariant('button')}
                 onMouseLeave={() => setVariant('default')}
-                onClick={() => setFeaturedId(project.id)}
-                className="group cursor-pointer select-none transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 flex flex-col"
+                className="group cursor-pointer select-none flex flex-col bg-white/60 hover:bg-white border border-black/[0.08] hover:border-[#751423]/40 rounded-2xl p-4 sm:p-5 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)]"
               >
-                {/* 3.1 PHYSICAL FOLDER TAB HEADER */}
-                <div className="relative w-full h-7 overflow-hidden pointer-events-none -mb-[1px]">
-                  <svg 
-                    className="w-full h-full block" 
-                    viewBox="0 0 340 28" 
-                    preserveAspectRatio="none"
-                  >
-                    <path
-                      d="M 0,28 L 0,7 Q 0,0 8,0 L 110,0 Q 118,0 126,10 L 136,28 L 340,28"
-                      fill={isFeatured ? '#751423' : '#E8E2D5'}
-                      className="transition-colors duration-300"
-                    />
-                  </svg>
-                  {/* Tab File Meta */}
-                  <div className="absolute top-1 left-3 flex items-center gap-1.5 z-10">
-                    <span className={`text-[10px] font-mono font-bold tracking-[0.10em] uppercase transition-colors duration-300 ${
-                      isFeatured ? 'text-white/90' : 'text-[#5C564E]'
-                    }`}>
-                      {project.number}
-                    </span>
-                    <span className={`text-[9px] font-mono tracking-[0.08em] uppercase transition-colors duration-300 ${
-                      isFeatured ? 'text-white/60' : 'text-[#8A847C]'
-                    }`}>
-                      / ARCHIVE
-                    </span>
+                {/* Image Container with subtle zoom */}
+                <div className="relative w-full h-52 sm:h-60 rounded-xl overflow-hidden bg-black/5 mb-4">
+                  <Image
+                    src={project.image}
+                    alt={project.alt}
+                    fill
+                    unoptimized
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover object-center filter saturate-[0.95] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+                  />
+                  <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#1A1616]/75 backdrop-blur-md text-[10px] font-mono tracking-[0.10em] text-white uppercase">
+                    {project.number}
+                  </div>
+                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/80 backdrop-blur-md text-[10px] font-mono tracking-[0.08em] text-[#1A1616] uppercase">
+                    {project.year}
                   </div>
                 </div>
 
-                {/* 3.2 FOLDER BODY PANEL */}
-                <div className={`p-4 sm:p-5 rounded-b-xl border-b border-l border-r flex flex-col justify-between flex-grow transition-all duration-300 ${
-                  isFeatured
-                    ? 'bg-[#751423] text-white border-[#751423] shadow-[0_12px_28px_rgba(117,20,35,0.22)]'
-                    : 'bg-[#E8E2D5] text-[#1C1A1A] border-black/10 shadow-[0_4px_16px_rgba(0,0,0,0.04)] group-hover:border-[#751423]/50 group-hover:shadow-[0_8px_24px_rgba(117,20,35,0.12)]'
-                }`}>
-                  
-                  {/* Top Image Preview Area */}
-                  <div className="relative w-full h-40 sm:h-44 md:h-48 lg:h-40 xl:h-44 rounded-lg overflow-hidden bg-black/5">
-                    <Image
-                      src={project.image}
-                      alt={project.alt}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="object-cover object-center filter saturate-[0.92] contrast-[1.03] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.02]"
-                    />
-                    <div className="absolute inset-0 bg-black/5 mix-blend-multiply pointer-events-none" />
-                  </div>
-
-                  {/* Client / Project Name & Minimal Arrow Button */}
-                  <div className="pt-3.5 flex items-start justify-between gap-3">
-                    <h3 className={`text-base sm:text-lg font-sans font-bold tracking-tight uppercase leading-snug transition-colors duration-200 ${
-                      isFeatured ? 'text-white' : 'text-[#161616] group-hover:text-[#751423]'
-                    }`}>
+                {/* Project Details */}
+                <div className="flex items-start justify-between gap-3 pt-1">
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-sans font-bold tracking-tight uppercase leading-snug text-[#1A1616] group-hover:text-[#751423] transition-colors duration-200">
                       {project.name}
                     </h3>
-
-                    {/* Minimal Circular Arrow Button */}
-                    <div className={`w-7 h-7 shrink-0 rounded-full border flex items-center justify-center transition-all duration-300 ${
-                      isFeatured
-                        ? 'border-white/30 text-white group-hover:bg-white group-hover:text-[#751423]'
-                        : 'border-black/15 text-[#1C1A1A] group-hover:border-[#751423] group-hover:text-[#751423] group-hover:bg-[#751423]/5'
-                    }`}>
-                      <span className="text-xs font-sans transform transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-                        ↗
-                      </span>
-                    </div>
+                    <p className="text-[11px] font-mono tracking-[0.10em] uppercase text-[#736E67] mt-1.5">
+                      {project.discipline}
+                    </p>
                   </div>
 
-                  {/* Discipline Metadata & Year */}
-                  <div className={`flex items-center justify-between text-[9.5px] sm:text-[10px] font-mono tracking-[0.10em] uppercase pt-2.5 mt-2.5 border-t transition-colors duration-300 ${
-                    isFeatured
-                      ? 'border-white/15 text-white/70'
-                      : 'border-black/10 text-[#736E67]'
-                  }`}>
-                    <span className="truncate pr-2">{project.discipline}</span>
-                    <span className="shrink-0">{project.year}</span>
+                  {/* Minimal Arrow Disc */}
+                  <div className="w-8 h-8 shrink-0 rounded-full border border-black/15 group-hover:border-[#751423] group-hover:bg-[#751423] group-hover:text-white flex items-center justify-center transition-all duration-300 text-xs">
+                    <span className="transform transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+                      ↗
+                    </span>
                   </div>
-
                 </div>
               </div>
             );

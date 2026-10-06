@@ -176,32 +176,36 @@ export function ServicesInteractive() {
         {/* ============================================================ */}
         {/* CENTER / RIGHT COLUMN: DYNAMIC MAIN EDITORIAL CONTENT       */}
         {/* ============================================================ */}
-        <div className="w-full lg:w-[78%] xl:w-[79%] flex flex-col items-start justify-center lg:pl-10 xl:pl-14 py-4 sm:py-6">
+        <div className="w-full lg:w-[78%] xl:w-[79%] flex flex-col items-start justify-center lg:pl-12 xl:pl-16 py-4 sm:py-6">
           <div className="flex flex-col items-start w-full max-w-[800px]">
             
-            {/* Main Visual Statement Heading (Architectural Swiss condensed grotesk) */}
-            <h3 className="font-condensed font-[900] text-[clamp(4.6rem,9.4vw,10.6rem)] text-[#171515] leading-[0.98] tracking-[-0.015em] uppercase select-none w-full my-0.5 sm:my-1">
+            {/* Minimalist Section Title */}
+            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#751423] mb-1">
+              DISCIPLINE {current.id}
+            </span>
+
+            {/* Main Visual Statement Heading */}
+            <h3 className="font-sans font-bold text-[clamp(2.5rem,5.2vw,4.5rem)] text-[#171515] leading-[1.05] tracking-[-0.03em] uppercase select-none w-full mb-3">
               {current.statementTitle}
             </h3>
 
             {/* Description */}
-            <p className="font-sans font-normal text-[15.5px] sm:text-[17px] text-[#423E3A] max-w-[520px] leading-[1.6] tracking-[-0.005em] mt-4 sm:mt-5 mb-6 sm:mb-8 text-left">
-              {current.description[0]}<br className="hidden sm:inline" />
-              {current.description[1]}
+            <p className="font-sans font-normal text-[16px] sm:text-[17.5px] text-[#554E48] max-w-[560px] leading-[1.6] tracking-[-0.01em] mb-8 text-left">
+              {current.description[0]} {current.description[1]}
             </p>
 
             {/* CORE CAPABILITIES SUB-SECTION */}
             <div className="w-full flex flex-col items-start">
               {/* Core Capabilities Header + Hairline */}
-              <div className="flex items-center gap-4 w-full mb-1 sm:mb-2 max-w-[580px] sm:max-w-[620px]">
-                <span className="font-sans font-semibold text-[10.5px] sm:text-[11px] uppercase tracking-[0.12em] text-[#171515] whitespace-nowrap">
+              <div className="flex items-center gap-4 w-full mb-2 max-w-[620px]">
+                <span className="font-mono text-[10.5px] sm:text-[11px] uppercase tracking-[0.14em] text-[#8C847C] whitespace-nowrap">
                   CORE CAPABILITIES
                 </span>
-                <div className="h-[1px] bg-[#171515]/[0.15] flex-1" aria-hidden="true" />
+                <div className="h-[1px] bg-black/10 flex-1" aria-hidden="true" />
               </div>
 
               {/* 4 Capabilities Rows */}
-              <div className="w-full flex flex-col max-w-[580px] sm:max-w-[620px]">
+              <div className="w-full flex flex-col max-w-[620px]">
                 {current.capabilities.map((cap, idx) => {
                   const isHovered = hoveredCapability === idx;
 
@@ -216,26 +220,26 @@ export function ServicesInteractive() {
                       onMouseLeave={() => {
                         setVariant('default');
                       }}
-                      className={`group relative flex items-center justify-between py-4 sm:py-5 w-full border-b transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                      className={`group relative flex items-center justify-between py-4 w-full border-b transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                         isHovered 
-                          ? 'border-[#751423] translate-x-2' 
-                          : 'border-[#171515]/[0.10] hover:border-[#171515]/[0.30]'
+                          ? 'border-[#751423] translate-x-1.5' 
+                          : 'border-black/[0.08] hover:border-black/20'
                       }`}
                     >
                       <div className="flex items-baseline gap-5 sm:gap-7">
                         {/* Capability Number */}
                         <span 
-                          className={`font-sans font-medium text-[12px] sm:text-[13px] tracking-[0.10em] transition-colors duration-400 ${
-                            isHovered ? 'text-[#751423]' : 'text-[#85817C]'
+                          className={`font-mono text-[11px] sm:text-[12px] tracking-[0.10em] transition-colors duration-300 ${
+                            isHovered ? 'text-[#751423]' : 'text-[#8A837C]'
                           }`}
                         >
                           {cap.number}
                         </span>
 
-                        {/* Capability Title (High-fashion serif) */}
+                        {/* Capability Title */}
                         <span 
-                          className={`font-serif text-[19px] sm:text-[22.5px] font-normal tracking-[-0.01em] transition-colors duration-400 ${
-                            isHovered ? 'text-[#171515]' : 'text-[#171515]/85'
+                          className={`font-sans text-[17px] sm:text-[19px] font-medium tracking-tight transition-colors duration-300 ${
+                            isHovered ? 'text-[#751423]' : 'text-[#1E1B19]'
                           }`}
                         >
                           {cap.title}
@@ -244,10 +248,10 @@ export function ServicesInteractive() {
 
                       {/* Arrow */}
                       <span 
-                        className={`text-[19px] sm:text-[21px] transition-all duration-400 font-light transform ${
+                        className={`text-sm sm:text-base transition-all duration-300 transform ${
                           isHovered 
                             ? 'text-[#751423] translate-x-1' 
-                            : 'text-[#85817C] group-hover:text-[#171515]'
+                            : 'text-[#9E968E] group-hover:text-[#171515]'
                         }`}
                       >
                         →
@@ -259,34 +263,15 @@ export function ServicesInteractive() {
             </div>
 
             {/* Bottom CTA Button */}
-            <div className="mt-8 sm:mt-10 flex items-center gap-4 sm:gap-5">
+            <div className="mt-8 sm:mt-10 flex items-center">
               <Link
                 href="#contact"
                 onMouseEnter={() => setVariant('button')}
                 onMouseLeave={() => setVariant('default')}
-                className="group relative flex items-center gap-4 sm:gap-5"
+                className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-[#1A1616] hover:bg-[#751423] text-white text-[12.5px] font-mono tracking-[0.10em] uppercase transition-all duration-300"
               >
-                {/* Burgundy Circle with Arrow */}
-                <span className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-[#751423] group-hover:bg-[#8D182B] text-white flex items-center justify-center transition-all duration-400 shadow-[0_2px_12px_rgba(117,20,35,0.25)] group-hover:scale-105 active:scale-95">
-                  <svg 
-                    className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white transform transition-transform duration-300 group-hover:translate-x-1" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2.2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                  >
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                  </svg>
-                </span>
-
-                {/* Stacked Text beside Circle: "EXPLORE / TECHNOLOGY" */}
-                <span className="font-sans font-bold text-[10px] sm:text-[11px] uppercase tracking-[0.12em] text-[#171515] leading-[1.6] text-left">
-                  EXPLORE<br />
-                  {current.statementTitle}
-                </span>
+                <span>INQUIRE ABOUT {current.statementTitle}</span>
+                <span className="text-sm">→</span>
               </Link>
             </div>
 

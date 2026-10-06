@@ -34,28 +34,28 @@ export function ContactCTA() {
           </span>
         </div>
 
-        {/* Grand Emotional Headline in One Single Line */}
+        {/* Grand Emotional Headline */}
         <div className="w-full mb-10 md:mb-14">
           <motion.p 
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-xs sm:text-sm font-sans font-medium tracking-[0.12em] uppercase text-white/80 mb-4"
+            className="text-xs font-mono uppercase tracking-[0.14em] text-white/70 mb-3"
           >
-            HAVE AN IDEA?
+            NEW INQUIRIES & COLLABORATIONS
           </motion.p>
 
           <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-3xl sm:text-5xl md:text-6xl lg:text-[4.8rem] xl:text-[6.2rem] 2xl:text-[7.2rem] font-condensed uppercase tracking-tight leading-[1.0] text-white whitespace-normal md:whitespace-nowrap"
+            className="text-3xl sm:text-5xl md:text-6xl lg:text-[4.2rem] font-sans font-bold uppercase tracking-tight leading-[1.06] text-white"
           >
-            LET&apos;S MAKE SOMETHING{' '}
-            <span className="font-serif italic font-normal text-[#F9F6F0]">
-              MATTER.
+            LET&apos;S CREATE SOMETHING{' '}
+            <span className="font-serif italic font-normal text-[#F5D5DA]">
+              Remarkable.
             </span>
           </motion.h2>
         </div>

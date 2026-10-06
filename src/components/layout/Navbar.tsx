@@ -4,18 +4,40 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCursorStore } from '@/components/ui/CustomCursor';
+import { useModalStore } from '@/lib/modalStore';
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('home');
   
-  const setVariant = useCursorStore(state => state.setVariant);
+  const setVariant = useCursorStore((state) => state.setVariant);
+  const { openProjectModal } = useModalStore();
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 40);
+
+      // Section tracking
+      const sections = ['services', 'work', 'philosophy', 'process', 'contact'];
+      const scrollPos = window.scrollY + 200;
+
+      let current = 'home';
+      for (const sectionId of sections) {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          const top = el.offsetTop;
+          const height = el.offsetHeight;
+          if (scrollPos >= top && scrollPos < top + height) {
+            current = sectionId;
+            break;
+          }
+        }
+      }
+      setActiveSection(current);
     };
-    window.addEventListener('scroll', handleScroll);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -29,43 +51,37 @@ export function Navbar() {
   }, [mobileMenuOpen]);
 
   const navLinks = [
-    { name: 'Home', href: '/', active: true },
-    { name: 'Philosophy', href: '#philosophy' },
-    { name: 'Services', href: '#services' },
-    { name: 'Work', href: '#work' },
-    { name: 'How We Work', href: '#how-we-work' },
-    { name: 'Studio', href: '#studio' },
-    { name: 'Contact', href: '#contact' },
+    { name: 'Home', href: '#home', id: 'home' },
+    { name: 'Services', href: '#services', id: 'services' },
+    { name: 'Work', href: '#work', id: 'work' },
+    { name: 'About', href: '#philosophy', id: 'philosophy' },
+    { name: 'Contact', href: '#contact', id: 'contact' },
   ];
 
   return (
     <>
       <header 
-        className={`fixed top-0 left-0 right-0 z-[60] h-[72px] px-6 sm:px-12 flex items-center justify-between border-b border-[rgba(120,40,40,0.15)] transition-all duration-300 ${
-          isScrolled ? 'bg-[#F6E3D0]/90 backdrop-blur-md shadow-sm' : 'bg-transparent'
+        className={`fixed top-0 left-0 right-0 z-[60] h-[72px] px-6 sm:px-12 flex items-center justify-between transition-all duration-300 ${
+          isScrolled 
+            ? 'bg-[#F3EEE7]/90 backdrop-blur-md border-b border-black/[0.08] shadow-[0_4px_20px_rgba(0,0,0,0.03)] text-[#171515]' 
+            : 'bg-transparent text-white border-b border-white/[0.08]'
         }`}
       >
-        {/* Left: ASAR Logo */}
+        {/* Left: ASARR Logo */}
         <Link 
           href="/" 
-          className="flex items-center gap-3 z-[70] group"
+          className="flex items-center gap-2 z-[70] group"
           onMouseEnter={() => setVariant('button')}
           onMouseLeave={() => setVariant('default')}
           onClick={() => setMobileMenuOpen(false)}
-          aria-label="ASARR Home"
+          aria-label="ASARR Studio Home"
         >
-          <svg 
-            className="w-7 h-7 text-[#5A0B16] transition-transform duration-300 group-hover:scale-105" 
-            viewBox="0 0 36 36" 
-            fill="currentColor"
-          >
-            <path d="M19.5 2.5 C19.5 2.5 25.5 15.5 33.5 32.5 C31.5 32.8 28.5 31.0 25.0 24.5 C21.5 17.5 19.5 9.5 19.0 2.5 Z" />
-            <path d="M4.0 32.5 C6.5 28.5 11.5 22.0 19.0 19.5 C16.5 20.5 12.0 22.5 7.5 26.5 C5.5 28.5 4.5 30.5 4.0 32.5 Z" />
-            <path d="M14.0 21.0 C16.5 16.5 18.5 10.0 19.5 2.5 C17.5 7.5 14.5 14.5 11.5 21.0 Z" opacity="0.9" />
-          </svg>
-          <span className="text-[22px] font-sans font-semibold tracking-[0.16em] text-[#5A0B16] select-none">
+          <span className={`text-[21px] sm:text-[23px] font-sans font-extrabold tracking-[0.18em] transition-colors select-none ${
+            isScrolled ? 'text-[#171515]' : 'text-white'
+          }`}>
             ASARR
           </span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#6F1420] shrink-0" />
         </Link>
 
         {/* Center: Desktop Navigation Links */}
@@ -73,30 +89,49 @@ export function Navbar() {
           className="hidden md:flex items-center absolute left-1/2 -translate-x-1/2" 
           aria-label="Main Navigation"
         >
-          <ul className="flex items-center gap-7 lg:gap-9">
-            {navLinks.map((link) => (
-              <li key={link.name} className="relative flex flex-col items-center">
-                <Link 
-                  href={link.href}
-                  className="text-[14.5px] font-sans font-medium text-[#3A141A] hover:text-[#751423] transition-colors py-1.5"
-                >
-                  {link.name}
-                </Link>
-              </li>
-            ))}
+          <ul className="flex items-center gap-8 lg:gap-10">
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.id;
+              return (
+                <li key={link.name} className="relative flex flex-col items-center">
+                  <a 
+                    href={link.href}
+                    className={`text-[13px] font-sans font-medium transition-colors py-1 ${
+                      isScrolled
+                        ? isActive ? 'text-[#6F1420] font-semibold' : 'text-[#4A423D] hover:text-[#6F1420]'
+                        : isActive ? 'text-white font-semibold' : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    {link.name}
+                  </a>
+                  {isActive && (
+                    <motion.span 
+                      layoutId="activeNavDot"
+                      className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-[#6F1420]" 
+                    />
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
-        {/* Right: Pill CTA Button */}
+        {/* Right: Pill CTA Button "Let's Talk ->" */}
         <div className="hidden md:flex items-center">
-          <Link 
-            href="#contact"
-            className="text-[13.5px] font-sans font-medium uppercase tracking-[0.08em] bg-[#5A0A14] text-white px-6 py-2.5 rounded-full hover:bg-[#450C14] transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+          <button 
+            type="button"
+            onClick={openProjectModal}
+            className={`text-[12px] font-sans font-semibold uppercase tracking-[0.10em] px-5 py-2.5 rounded-full transition-all duration-300 flex items-center gap-2 ${
+              isScrolled
+                ? 'bg-[#6F1420] text-white hover:bg-[#5A0E1A] shadow-sm hover:shadow-md'
+                : 'bg-white/10 hover:bg-white text-white hover:text-[#171515] border border-white/20'
+            }`}
             onMouseEnter={() => setVariant('button')}
             onMouseLeave={() => setVariant('default')}
           >
-            LET&apos;S BUILD →
-          </Link>
+            <span>Let&apos;s Talk</span>
+            <span aria-hidden="true" className="text-sm">→</span>
+          </button>
         </div>
 
         {/* Mobile Menu Toggle Button */}
@@ -104,7 +139,9 @@ export function Navbar() {
           type="button"
           aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
           aria-expanded={mobileMenuOpen}
-          className="md:hidden flex items-center gap-2 text-xs font-bold uppercase tracking-[0.10em] text-[#5A0A14] z-[70] p-2 rounded-lg hover:bg-black/5 transition-colors min-h-[44px] min-w-[44px] justify-center"
+          className={`md:hidden flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-[0.10em] z-[70] p-2 rounded-lg transition-colors ${
+            isScrolled ? 'text-[#171515]' : 'text-white'
+          }`}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           <span className="font-bold text-lg">
@@ -121,30 +158,34 @@ export function Navbar() {
             initial={{ opacity: 0, y: '-100%' }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '-100%' }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-[50] bg-[#F6E3D0]/98 backdrop-blur-xl flex flex-col justify-center px-8"
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-[55] bg-[#F3EEE7]/98 backdrop-blur-xl flex flex-col justify-center px-8"
           >
             <nav className="flex flex-col gap-6">
               {navLinks.map((link) => (
-                <Link 
+                <a 
                   key={link.name}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-3xl sm:text-4xl font-sans font-medium text-[#350A12] hover:text-[#5A0A14] transition-colors uppercase tracking-tight"
+                  className="text-3xl font-sans font-medium text-[#171515] hover:text-[#6F1420] transition-colors uppercase tracking-tight"
                 >
                   {link.name}
-                </Link>
+                </a>
               ))}
-              <Link 
-                href="#contact" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="inline-flex items-center justify-center text-sm font-sans font-medium uppercase tracking-[0.08em] bg-[#5A0A14] text-white px-8 py-3 rounded-full mt-4 self-start"
+              <button 
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openProjectModal();
+                }}
+                className="inline-flex items-center justify-center gap-3 text-xs font-sans font-semibold uppercase tracking-[0.12em] bg-[#6F1420] text-white px-8 py-3.5 rounded-full mt-4 self-start shadow-md"
               >
-                LET&apos;S BUILD →
-              </Link>
+                <span>LET&apos;S TALK</span>
+                <span>→</span>
+              </button>
             </nav>
             
-            <div className="absolute bottom-10 left-8 right-8 flex justify-between text-xs font-medium uppercase tracking-[0.10em] text-[#4A1A1A]/60 border-t border-[#4A1A1A]/15 pt-6">
+            <div className="absolute bottom-10 left-8 right-8 flex justify-between text-xs font-mono uppercase tracking-[0.10em] text-[#7A726C] border-t border-black/10 pt-6">
               <span>hello@asarr.in</span>
               <span>Bangalore, IN</span>
             </div>
