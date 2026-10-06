@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Anton, IBM_Plex_Mono, Pinyon_Script } from 'next/font/google';
 import '@fontsource/cormorant-garamond/400.css';
 import '@fontsource/cormorant-garamond/400-italic.css';
@@ -61,7 +62,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body 
-        className={`${manrope.variable} ${anton.variable} ${ibmPlexMono.variable} ${pinyonScript.variable} font-sans bg-background text-foreground min-h-screen flex flex-col antialiased selection:bg-primary/20 selection:text-primary custom-cursor-active overflow-x-clip`}
+        className={`${anton.variable} ${ibmPlexMono.variable} ${pinyonScript.variable} font-sans bg-background text-foreground min-h-screen flex flex-col antialiased selection:bg-primary/20 selection:text-primary custom-cursor-active overflow-x-clip`}
       >
         <CustomCursor />
         <Navbar />
