@@ -7,7 +7,7 @@ import { useModalStore } from '@/lib/modalStore';
 
 export function Hero() {
   const setVariant = useCursorStore((state) => state.setVariant);
-  const { openProjectModal, openShowreel } = useModalStore();
+  const { openProjectModal } = useModalStore();
 
   const scrollToNext = () => {
     const nextSection = document.getElementById('services') || document.getElementById('what-we-do');
@@ -56,10 +56,16 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="w-full"
           >
-            <h1 className="text-[clamp(3.8rem,9.5vw,7.8rem)] font-sans font-black tracking-[-0.04em] leading-[0.92] text-white flex items-baseline">
-              <span>ASARR</span>
-              <span className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-[#6F1420] ml-2 inline-block transform translate-y-[-0.1em]" />
-            </h1>
+            <h1 className="sr-only">ASARR — Digital experiences that create Enduring Impact</h1>
+            <div className="relative w-full max-w-[420px] sm:max-w-[540px] h-[78px] sm:h-[105px] lg:h-[125px] mb-2">
+              <Image
+                src="/images/brand/asarr_logo_white.png"
+                alt="ASARR"
+                fill
+                priority
+                className="object-contain object-left select-none"
+              />
+            </div>
 
             <p className="font-serif italic text-2xl sm:text-3xl lg:text-[2.2rem] text-[#F5D5DA] font-normal tracking-[-0.01em] mt-3 sm:mt-4 leading-snug">
               Digital experiences that create Enduring Impact.
@@ -89,24 +95,10 @@ export function Hero() {
               onClick={openProjectModal}
               onMouseEnter={() => setVariant('button')}
               onMouseLeave={() => setVariant('default')}
-              className="inline-flex items-center justify-center gap-3 px-7 sm:px-8 h-[48px] bg-white hover:bg-[#FAF6F0] text-[#11100F] text-xs font-sans font-bold uppercase tracking-[0.10em] rounded-full transition-all duration-300 shadow-[0_4px_20px_rgba(255,255,255,0.15)] hover:shadow-[0_6px_25px_rgba(255,255,255,0.25)] hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-3 px-8 sm:px-9 h-[50px] bg-white hover:bg-[#FAF6F0] text-[#11100F] text-xs font-sans font-bold uppercase tracking-[0.12em] rounded-full transition-all duration-300 shadow-[0_4px_25px_rgba(255,255,255,0.18)] hover:shadow-[0_6px_30px_rgba(255,255,255,0.28)] hover:-translate-y-0.5 cursor-pointer"
             >
               <span>Start a Project</span>
-              <span aria-hidden="true" className="text-sm">→</span>
-            </button>
-
-            {/* Secondary Glass Pill Button with Play Icon */}
-            <button
-              type="button"
-              onClick={openShowreel}
-              onMouseEnter={() => setVariant('button')}
-              onMouseLeave={() => setVariant('default')}
-              className="inline-flex items-center justify-center gap-3 px-6 sm:px-7 h-[48px] bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 text-white text-xs font-sans font-semibold uppercase tracking-[0.10em] rounded-full transition-all duration-300 hover:-translate-y-0.5"
-            >
-              <span>Watch Showreel</span>
-              <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] pl-0.5">
-                ▶
-              </span>
+              <span aria-hidden="true" className="text-sm font-bold">→</span>
             </button>
           </motion.div>
 
@@ -151,7 +143,7 @@ export function Hero() {
 
         </div>
 
-        {/* RIGHT COLUMN: Cinematic Studio Environment & Interactive Composition (Cols 7-12) */}
+        {/* RIGHT COLUMN: Sculptural Architectural Composition & Brand Presence (Cols 7-12) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -168,43 +160,24 @@ export function Hero() {
           </div>
 
           {/* Main Visual Frame */}
-          <div className="relative w-full aspect-[4/3] sm:aspect-[16/11] rounded-3xl overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.6)] border border-white/15 group">
+          <div className="relative w-full aspect-[16/9] rounded-3xl overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.6)] border border-white/15 group bg-[#1A1615]">
             <Image
-              src="/images/studio_assets/hero_studio.jpg"
-              alt="ASARR High-End Creative Studio Environment"
+              src="/images/studio/asarr-laptop-desk.jpg"
+              alt="ASARR Branded Laptop and Studio Desk"
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover object-center filter saturate-[0.98] contrast-[1.04] group-hover:scale-105 transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              className="object-cover object-center group-hover:scale-[1.02] transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]"
             />
 
-            {/* Subtle Gradient Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,_rgba(111,20,32,0.2),_transparent_60%)] pointer-events-none" />
-
-            {/* Floating Interactive Badge: "BEHIND THE SCENES" */}
-            <button
-              type="button"
-              onClick={openShowreel}
-              onMouseEnter={() => setVariant('button')}
-              onMouseLeave={() => setVariant('default')}
-              className="absolute bottom-5 right-5 sm:bottom-6 sm:right-6 z-20 bg-white/90 hover:bg-white text-[#11100F] px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-3 backdrop-blur-md border border-white/40 group/badge hover:-translate-y-1 transition-all duration-300"
-            >
-              <div className="w-8 h-8 rounded-full bg-[#6F1420] text-white flex items-center justify-center text-xs shadow-sm">
-                ▶
-              </div>
-              <div className="text-left">
-                <span className="block font-mono text-[9px] tracking-[0.14em] text-[#6E665E] uppercase font-bold">
-                  STUDIO ARCHIVE
-                </span>
-                <span className="block font-sans font-bold text-xs uppercase tracking-wider text-[#11100F]">
-                  BEHIND THE SCENES
-                </span>
-              </div>
-            </button>
+            {/* Bottom Right Studio Discipline Pill */}
+            <div className="absolute bottom-4 right-4 sm:bottom-5 sm:right-5 z-20 bg-white/10 backdrop-blur-md border border-white/20 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-2xl text-[10px] sm:text-[11px] font-mono text-white/90 uppercase tracking-widest hidden sm:flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#F5D5DA]" />
+              <span>CRAFTED FOR ENDURING IMPACT</span>
+            </div>
 
             {/* Floating Bottom Left Book Spine Tag */}
-            <div className="absolute bottom-5 left-5 sm:bottom-6 sm:left-6 z-20 bg-[#11100F]/85 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-full text-[10px] font-mono text-[#D4CCC2] tracking-wider uppercase hidden sm:flex items-center gap-2">
+            <div className="absolute bottom-4 left-4 sm:bottom-5 sm:left-5 z-20 bg-[#11100F]/85 backdrop-blur-md border border-white/10 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[9.5px] sm:text-[10px] font-mono text-[#D4CCC2] tracking-wider uppercase flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#6F1420]" />
               <span>BRAND &middot; CONTENT &middot; TECH &middot; GROWTH</span>
             </div>

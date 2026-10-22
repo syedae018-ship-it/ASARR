@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCursorStore } from '@/components/ui/CustomCursor';
 import { useModalStore } from '@/lib/modalStore';
 
+import Image from 'next/image';
+
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -67,21 +69,24 @@ export function Navbar() {
             : 'bg-transparent text-white border-b border-white/[0.08]'
         }`}
       >
-        {/* Left: ASARR Logo */}
+        {/* Left: ASARR Brand Wordmark Logo */}
         <Link 
           href="/" 
-          className="flex items-center gap-2 z-[70] group"
+          className="flex items-center z-[70] group py-1"
           onMouseEnter={() => setVariant('button')}
           onMouseLeave={() => setVariant('default')}
           onClick={() => setMobileMenuOpen(false)}
           aria-label="ASARR Studio Home"
         >
-          <span className={`text-[21px] sm:text-[23px] font-sans font-extrabold tracking-[0.18em] transition-colors select-none ${
-            isScrolled ? 'text-[#171515]' : 'text-white'
-          }`}>
-            ASARR
-          </span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#6F1420] shrink-0" />
+          <div className="relative h-7 sm:h-8 w-[110px] sm:w-[130px]">
+            <Image
+              src={isScrolled ? '/images/brand/asarr_logo_burgundy.png' : '/images/brand/asarr_logo_white.png'}
+              alt="ASARR"
+              fill
+              priority
+              className="object-contain object-left select-none transition-all duration-300"
+            />
+          </div>
         </Link>
 
         {/* Center: Desktop Navigation Links */}

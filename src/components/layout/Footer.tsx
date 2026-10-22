@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Footer() {
   return (
@@ -12,9 +13,17 @@ export function Footer() {
           <div className="lg:col-span-4 flex flex-col items-start pr-0 lg:pr-8">
             <Link 
               href="/" 
-              className="text-2xl sm:text-3xl font-sans font-extrabold tracking-[0.18em] text-white hover:text-[#F5D5DA] transition-colors"
+              className="inline-block hover:opacity-85 transition-opacity"
+              aria-label="ASARR Studio Home"
             >
-              ASARR
+              <div className="relative h-8 sm:h-9 w-[130px] sm:w-[150px]">
+                <Image
+                  src="/images/brand/asarr_logo_white.png"
+                  alt="ASARR"
+                  fill
+                  className="object-contain object-left select-none"
+                />
+              </div>
             </Link>
 
             <p className="font-sans text-xs sm:text-sm text-[#A69E94] leading-[1.65] mt-4 mb-6 max-w-sm">
