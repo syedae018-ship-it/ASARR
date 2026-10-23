@@ -137,10 +137,17 @@ export default function ClientOnboarding() {
         brandName = client?.company || client?.name || "Client Organization";
       }
 
+      // Revoke any previous unused pending invitation for this recipient email
+      await supabase
+        .from("client_onboarding_invitations")
+        .update({ status: "revoked" })
+        .eq("email", email)
+        .eq("status", "pending");
+
       // Generate cryptographically secure token
       const token = "inv_" + crypto.randomUUID().replace(/-/g, "") + Date.now().toString(36);
       const now = new Date();
-      const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days expiration
+      const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(); // Exactly 24 hours expiration
 
       const { data, error } = await supabase.from("client_onboarding_invitations").insert({
         client_id: clientId,
@@ -162,7 +169,7 @@ export default function ClientOnboarding() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["client_onboarding_invitations"] });
       queryClient.invalidateQueries({ queryKey: ["clients"] });
-      toast.success("Single-use client invitation link generated!");
+      toast.success("Single-use 24-hour client invitation link generated!");
       setIsInviteModalOpen(false);
       setInviteEmail("");
       setInvitePhone("");
@@ -202,7 +209,7 @@ export default function ClientOnboarding() {
   const regenerateInviteMutation = useMutation({
     mutationFn: async (inv: ClientOnboardingInvitation) => {
       const newToken = "inv_" + crypto.randomUUID().replace(/-/g, "") + Date.now().toString(36);
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // Exactly 24 hours
 
       const { error } = await supabase
         .from("client_onboarding_invitations")
@@ -388,8 +395,8 @@ export default function ClientOnboarding() {
                       {inv.created_at ? format(parseISO(inv.created_at), "dd MMM yyyy, hh:mm a") : "—"}
                     </td>
 
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {inv.expires_at ? format(parseISO(inv.expires_at), "dd MMM yyyy") : "7 days"}
+                    <td className="px-4 py-3 text-xs text-muted-foreground font-mono">
+                      {inv.expires_at ? format(parseISO(inv.expires_at), "dd MMM yyyy, hh:mm a") : "24 hours"}
                     </td>
 
                     <td className="px-4 py-3 text-right whitespace-nowrap">

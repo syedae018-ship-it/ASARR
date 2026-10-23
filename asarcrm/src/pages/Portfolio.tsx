@@ -306,7 +306,9 @@ export default function Portfolio() {
     try {
       const saved = localStorage.getItem("asarr_local_website_draft");
       if (saved) return JSON.parse(saved);
-    } catch {}
+    } catch {
+      // Ignore JSON parse errors and fallback to default
+    }
     return DEFAULT_CONTENT;
   });
   const [publishedVersion, setPublishedVersion] = useState<number>(1);

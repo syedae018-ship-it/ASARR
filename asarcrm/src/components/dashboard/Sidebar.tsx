@@ -18,7 +18,8 @@ import {
   PhoneCall,
   UserPlus,
   Shield,
-  Receipt
+  Receipt,
+  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Profile } from "@/types";
@@ -42,6 +43,7 @@ const mainNavItems = [
 const bottomNavItems = [
   { title: "Templates", url: "/templates", icon: FileText },
   { title: "FAQ", url: "/faq", icon: HelpCircle },
+  { title: "My Profile", url: "/profile", icon: User },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 

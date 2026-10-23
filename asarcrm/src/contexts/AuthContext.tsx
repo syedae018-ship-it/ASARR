@@ -232,38 +232,91 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       let invitedRole: UserRole = "admin";
+      let inviteType: "admin" | "client" = "admin";
+      let clientId: string | null = null;
       let invitationRecord: any = null;
 
       if (inviteToken) {
-        const { data: inv, error: invError } = await supabase
-          .from("admin_invitations")
-          .select("*")
-          .eq("token", inviteToken)
-          .eq("status", "pending")
-          .maybeSingle();
+        const cleanToken = inviteToken.trim();
+        let validated = false;
 
-        if (invError || !inv) {
-          return { error: new Error("This administrator invitation link is invalid or expired.") };
+        // 1. Try server RPC validation
+        try {
+          const { data: rpcData, error: rpcErr } = await supabase.rpc("validate_invitation_token", {
+            invite_token: cleanToken,
+          });
+
+          if (!rpcErr && rpcData && rpcData.valid) {
+            if (rpcData.email.trim().toLowerCase() !== normalizedEmail) {
+              return {
+                error: new Error(
+                  `This invitation is strictly restricted to ${rpcData.email}. You cannot activate with a different email address.`
+                ),
+              };
+            }
+            inviteType = rpcData.type;
+            invitedRole = rpcData.type === "client" ? "client" : (rpcData.role as UserRole || "admin");
+            clientId = rpcData.client_id || null;
+            validated = true;
+          } else if (rpcData && rpcData.error) {
+            return { error: new Error(rpcData.error) };
+          }
+        } catch {
+          // Fall through
         }
 
-        // STRICT EMAIL BINDING ENFORCEMENT
-        if (inv.email.trim().toLowerCase() !== normalizedEmail) {
-          return {
-            error: new Error(
-              `This invitation is strictly restricted to ${inv.email}. You cannot activate with a different email address.`
-            )
-          };
+        // 2. Direct table fallback if RPC didn't validate
+        if (!validated) {
+          // Check admin_invitations
+          const { data: adminInv } = await supabase
+            .from("admin_invitations")
+            .select("*")
+            .eq("token", cleanToken)
+            .maybeSingle();
+
+          if (adminInv && adminInv.status === "pending") {
+            if (adminInv.email.trim().toLowerCase() !== normalizedEmail) {
+              return {
+                error: new Error(`This invitation is strictly restricted to ${adminInv.email}.`),
+              };
+            }
+            inviteType = "admin";
+            invitedRole = adminInv.role as UserRole || "admin";
+            invitationRecord = adminInv;
+            validated = true;
+          } else {
+            // Check client_onboarding_invitations
+            const { data: clientInv } = await supabase
+              .from("client_onboarding_invitations")
+              .select("*")
+              .eq("token", cleanToken)
+              .maybeSingle();
+
+            if (clientInv && clientInv.status === "pending") {
+              if (clientInv.email.trim().toLowerCase() !== normalizedEmail) {
+                return {
+                  error: new Error(`This invitation is strictly restricted to ${clientInv.email}.`),
+                };
+              }
+              inviteType = "client";
+              invitedRole = "client";
+              clientId = clientInv.client_id;
+              invitationRecord = clientInv;
+              validated = true;
+            }
+          }
         }
 
-        invitedRole = inv.role as UserRole;
-        invitationRecord = inv;
+        if (!validated) {
+          return { error: new Error("This invitation link is invalid or expired.") };
+        }
       } else {
         const ownerId = await getInstallationOwnerId();
         if (ownerId && !isDemo) {
           return {
             error: new Error(
               "Access is available by invitation only. Please contact ASARR to receive an invitation."
-            )
+            ),
           };
         }
       }
@@ -271,26 +324,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.signUp({
         email: normalizedEmail,
         password,
-        options: { data: { full_name: fullName.trim() } },
+        options: {
+          data: {
+            full_name: fullName.trim(),
+            role: invitedRole,
+            client_id: clientId || undefined,
+          },
+        },
       });
       if (error) return { error };
 
-      if (invitationRecord && data.user) {
-        try {
-          await supabase.rpc("claim_admin_invitation", { invite_token: inviteToken });
-        } catch {
-          // Fallback if migration 5 pending
-          await supabase.from("admin_memberships").upsert({
-            user_id: data.user.id,
-            role: invitedRole,
-            invited_by: invitationRecord.invited_by,
-            status: "active"
-          }, { onConflict: "user_id" });
+      if (inviteToken && data.user) {
+        if (inviteType === "admin") {
+          try {
+            await supabase.rpc("claim_admin_invitation", { invite_token: inviteToken });
+          } catch {
+            await supabase.from("admin_memberships").upsert({
+              user_id: data.user.id,
+              role: invitedRole,
+              invited_by: invitationRecord?.invited_by || "77308899-8657-4ce4-907c-b56e33c8f760",
+              status: "active",
+              email: normalizedEmail,
+            }, { onConflict: "user_id" });
 
-          await supabase
-            .from("admin_invitations")
-            .update({ status: "accepted" })
-            .eq("id", invitationRecord.id);
+            await supabase
+              .from("admin_invitations")
+              .update({ status: "accepted" })
+              .eq("token", inviteToken);
+          }
+        } else {
+          try {
+            await supabase.rpc("claim_client_invitation", { invite_token: inviteToken });
+          } catch {
+            if (clientId) {
+              await supabase.from("client_users").upsert({
+                client_id: clientId,
+                user_id: data.user.id,
+                role: "client",
+              }, { onConflict: "client_id, user_id" });
+            }
+
+            await supabase
+              .from("client_onboarding_invitations")
+              .update({ status: "accepted" })
+              .eq("token", inviteToken);
+          }
         }
       }
 

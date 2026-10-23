@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   KeyRound,
   Upload,
+  LogOut,
 } from "lucide-react";
 import { Client, Profile } from "@/types";
 
@@ -92,7 +93,7 @@ export default function PortalProfile() {
     }
     if (clientData) {
       setCompanyName(clientData.company || clientData.name || "");
-      if (clientData.phone && !phone) setPhone(clientData.phone);
+      if (clientData.phone) setPhone((prev) => prev || clientData.phone || "");
       if (clientData.website) setWebsite(clientData.website);
       if (clientData.address) setAddress(clientData.address);
     }
@@ -218,18 +219,28 @@ export default function PortalProfile() {
             Manage your personal profile, company details, and authentication security.
           </p>
         </div>
-        <Button
-          onClick={() => saveProfileMutation.mutate()}
-          disabled={saveProfileMutation.isPending || isLoading}
-          className="min-w-[130px]"
-        >
-          {saveProfileMutation.isPending ? "Saving..." : (
-            <>
-              <Save className="w-4 h-4 mr-2" />
-              Save Profile
-            </>
-          )}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => signOut()}
+            className="text-xs border-destructive/20 text-destructive hover:bg-destructive/10"
+          >
+            <LogOut className="w-3.5 h-3.5 mr-1.5" />
+            Sign Out
+          </Button>
+          <Button
+            onClick={() => saveProfileMutation.mutate()}
+            disabled={saveProfileMutation.isPending || isLoading}
+            className="min-w-[130px]"
+          >
+            {saveProfileMutation.isPending ? "Saving..." : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Save Profile
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Account Authorization Badge */}

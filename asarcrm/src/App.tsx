@@ -16,6 +16,7 @@ import Tasks from "./pages/Tasks";
 import Calendar from "./pages/Calendar";
 import Invoices from "./pages/Invoices";
 import Settings from "./pages/Settings";
+import AdminProfile from "./pages/AdminProfile";
 import Auth from "./pages/Auth";
 import FAQ from "./pages/FAQ";
 import Terms from "./pages/Terms";
@@ -259,6 +260,13 @@ function AppRoutes() {
       <Route path="/expenses/:id/print" element={
         <ProtectedAdminRoute>
           <ExpensePrint />
+        </ProtectedAdminRoute>
+      } />
+      <Route path="/profile" element={
+        <ProtectedAdminRoute>
+          <DashboardLayout>
+            <AdminProfile />
+          </DashboardLayout>
         </ProtectedAdminRoute>
       } />
       <Route path="/settings" element={

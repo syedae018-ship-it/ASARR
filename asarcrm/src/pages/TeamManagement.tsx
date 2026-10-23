@@ -15,10 +15,11 @@ import { format, parseISO } from "date-fns";
 import {
   Users, UserPlus, Shield, ShieldAlert, ShieldCheck, Mail,
   Copy, Check, Trash2, UserX, CheckCircle2, Crown, Sparkles,
-  CheckSquare, Calendar, Clock, ListTodo, Plus, CheckCircle
+  CheckSquare, Calendar, Clock, ListTodo, Plus, CheckCircle, RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { db, collection, query, where, getDocs, addDoc, updateDoc, doc, deleteDoc, orderBy } from "@/lib/database";
+import { db, collection, query, where, getDocs, addDoc, updateDoc, doc, deleteDoc, orderBy, getInstallationOwnerId } from "@/lib/database";
+import { supabase } from "@/integrations/supabase/client";
 import { AdminMembership, AdminInvitation } from "@/types";
 
 export default function TeamManagement() {
@@ -43,9 +44,24 @@ export default function TeamManagement() {
   const { data: members = [] } = useQuery({
     queryKey: ["admin_memberships"],
     queryFn: async () => {
-      const snap = await getDocs(collection(db, "admin_memberships"));
-      return snap.docs.map(d => ({ id: d.id, ...d.data() })) as AdminMembership[];
-    }
+      const [membersSnap, profilesRes] = await Promise.all([
+        getDocs(collection(db, "admin_memberships")),
+        supabase.from("profiles").select("id, email, full_name, role"),
+      ]);
+
+      const profileMap = new Map((profilesRes.data || []).map((p) => [p.id, p]));
+
+      return membersSnap.docs.map((d) => {
+        const data = d.data();
+        const prof = profileMap.get(data.user_id);
+        return {
+          id: d.id,
+          ...data,
+          email: data.email || prof?.email || "team@asarr.in",
+          full_name: data.full_name || prof?.full_name || "Agency Admin",
+        };
+      }) as AdminMembership[];
+    },
   });
 
   const { data: teamTasks = [], isLoading: isTasksLoading } = useQuery({
@@ -112,41 +128,94 @@ export default function TeamManagement() {
     queryKey: ["admin_invitations"],
     queryFn: async () => {
       const snap = await getDocs(collection(db, "admin_invitations"));
-      return snap.docs.map(d => ({ id: d.id, ...d.data() })) as AdminInvitation[];
-    }
+      return snap.docs.map((d) => {
+        const item = d.data() as AdminInvitation;
+        const isExpired = item.expires_at && new Date(item.expires_at) < new Date() && item.status === "pending";
+        return {
+          id: d.id,
+          ...item,
+          status: isExpired ? "expired" : item.status,
+        };
+      }) as AdminInvitation[];
+    },
   });
 
-  // Create Invitation Mutation
+  // Create Invitation Mutation (Strict 24-hour expiration)
   const inviteAdminMutation = useMutation({
     mutationFn: async () => {
-      if (!inviteEmail.trim()) {
-        throw new Error("Email is required.");
+      const targetEmail = inviteEmail.trim().toLowerCase();
+      if (!targetEmail || !targetEmail.includes("@")) {
+        throw new Error("A valid email is required.");
       }
 
-      const token = "adm_" + Math.random().toString(36).substring(2, 12) + Date.now().toString(36);
+      // Revoke any previous unused pending invitation for this recipient email
+      await supabase
+        .from("admin_invitations")
+        .update({ status: "revoked" })
+        .eq("email", targetEmail)
+        .eq("status", "pending");
+
+      const token = "adm_" + crypto.randomUUID().replace(/-/g, "") + Date.now().toString(36);
       const now = new Date();
-      const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(); // Exactly 24 hours
+
+      const ownerId = await getInstallationOwnerId();
+      const inviterId = user?.id || ownerId || "77308899-8657-4ce4-907c-b56e33c8f760";
 
       await addDoc(collection(db, "admin_invitations"), {
-        email: inviteEmail.trim().toLowerCase(),
+        email: targetEmail,
         role: inviteRole,
         token,
         status: "pending",
-        invited_by: user?.id || "admin-owner",
+        invited_by: inviterId,
         expires_at: expiresAt,
-        created_at: now.toISOString()
+        created_at: now.toISOString(),
       });
+
+      return { token };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin_invitations"] });
-      toast.success("Administrator invitation link generated!");
+      toast.success("Administrator invitation link generated (valid 24 hours)!");
       setIsInviteOpen(false);
       setInviteEmail("");
       setInviteFullName("");
+      if (data?.token) {
+        copyInvitationToken(data.token, "new");
+      }
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to invite administrator");
-    }
+    },
+  });
+
+  // Regenerate / Refresh Admin Invitation Mutation
+  const regenerateAdminInviteMutation = useMutation({
+    mutationFn: async (inv: AdminInvitation) => {
+      const newToken = "adm_" + crypto.randomUUID().replace(/-/g, "") + Date.now().toString(36);
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // Exactly 24 hours
+
+      const { error } = await supabase
+        .from("admin_invitations")
+        .update({
+          token: newToken,
+          status: "pending",
+          expires_at: expiresAt,
+          created_at: new Date().toISOString(),
+        })
+        .eq("id", inv.id);
+
+      if (error) throw error;
+      return newToken;
+    },
+    onSuccess: (newToken, inv) => {
+      queryClient.invalidateQueries({ queryKey: ["admin_invitations"] });
+      copyInvitationToken(newToken, inv.id);
+      toast.success("Invitation refreshed with a new 24-hour token!");
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Failed to refresh invitation");
+    },
   });
 
   // Change Role Mutation
@@ -191,10 +260,10 @@ export default function TeamManagement() {
   });
 
   const copyInvitationToken = (token: string, id: string) => {
-    const url = `${window.location.origin}/portal/auth?invite=${token}`;
+    const url = `${window.location.origin}/portal/activate/${token}`;
     navigator.clipboard.writeText(url);
     setCopiedId(id);
-    toast.success("Admin invite link copied!");
+    toast.success("Admin activation link copied!");
     setTimeout(() => setCopiedId(null), 2500);
   };
 
@@ -416,41 +485,53 @@ export default function TeamManagement() {
                         {inv.status}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {inv.expires_at ? format(parseISO(inv.expires_at), "dd MMM yyyy") : "7 days"}
+                    <td className="px-4 py-3 text-xs text-muted-foreground font-mono">
+                      {inv.expires_at ? format(parseISO(inv.expires_at), "dd MMM yyyy, hh:mm a") : "24 hours"}
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-2">
                         {inv.status === "pending" && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-xs border-primary/20 text-primary hover:bg-primary/5"
-                              onClick={() => copyInvitationToken(inv.token, inv.id)}
-                            >
-                              {copiedId === inv.id ? (
-                                <>
-                                  <Check className="w-3.5 h-3.5 mr-1 text-emerald-600" />
-                                  Copied
-                                </>
-                              ) : (
-                                <>
-                                  <Copy className="w-3.5 h-3.5 mr-1" />
-                                  Copy Link
-                                </>
-                              )}
-                            </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs border-primary/20 text-primary hover:bg-primary/5"
+                            onClick={() => copyInvitationToken(inv.token, inv.id)}
+                          >
+                            {copiedId === inv.id ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+                                Copied
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5 mr-1" />
+                                Copy Link
+                              </>
+                            )}
+                          </Button>
+                        )}
 
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                              onClick={() => revokeInviteMutation.mutate(inv.id)}
-                            >
-                              Revoke
-                            </Button>
-                          </>
+                        {inv.status !== "accepted" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                            onClick={() => regenerateAdminInviteMutation.mutate(inv)}
+                          >
+                            <RefreshCw className="w-3 h-3 mr-1" />
+                            Refresh Link
+                          </Button>
+                        )}
+
+                        {inv.status === "pending" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                            onClick={() => revokeInviteMutation.mutate(inv.id)}
+                          >
+                            Revoke
+                          </Button>
                         )}
                       </div>
                     </td>
