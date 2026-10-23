@@ -60,7 +60,7 @@ export function Navbar() {
     { name: 'Work', href: '/#work', id: 'work' },
     { name: 'About', href: '/#philosophy', id: 'philosophy' },
     { name: 'Contact', href: '/#contact', id: 'contact' },
-    { name: 'ASAR Portal', href: CRM_PORTAL_URL, id: 'portal', isPortal: true },
+    { name: 'ASARR Portal', href: CRM_PORTAL_URL, id: 'portal', isPortal: true },
   ];
 
   return (

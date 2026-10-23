@@ -136,7 +136,7 @@ export default function Auth() {
     e.preventDefault();
 
     if (!invitation) {
-      toast.error("Your email is not authorized to access the ASAR Client Portal. Please contact ASAR to receive an invitation.");
+      toast.error("Your email is not authorized to access the ASARR Client Portal. Please contact ASARR to receive an invitation.");
       return;
     }
 
@@ -435,7 +435,7 @@ export default function Auth() {
                       Access is Restricted
                     </p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Your email is not authorized to access the ASAR Client Portal. Please contact ASAR to receive an invitation.
+                      Your email is not authorized to access the ASARR Client Portal. Please contact ASARR to receive an invitation.
                     </p>
                   </div>
 

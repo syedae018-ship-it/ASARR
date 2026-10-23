@@ -119,7 +119,7 @@ export function Footer() {
                 <a href="#contact" className="hover:text-white transition-colors">Contact</a>
               </li>
               <li>
-                <Link href="/portal/auth" className="hover:text-white transition-colors text-[#F5D5DA] font-medium">ASAR Portal</Link>
+                <Link href="/portal/auth" className="hover:text-white transition-colors text-[#F5D5DA] font-medium">ASARR Portal</Link>
               </li>
             </ul>
           </div>
