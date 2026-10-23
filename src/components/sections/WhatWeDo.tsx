@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useCursorStore } from '@/components/ui/CustomCursor';
 import { useModalStore } from '@/lib/modalStore';
+import { useWebsiteContent } from '@/lib/websiteContentContext';
 
 interface ServiceCard {
   id: string;
@@ -65,6 +66,11 @@ const services: ServiceCard[] = [
 export function WhatWeDo() {
   const setVariant = useCursorStore((state) => state.setVariant);
   const { openProjectModal } = useModalStore();
+  const { content } = useWebsiteContent();
+  const whatWeDo = content.what_we_do;
+  const serviceCards = (whatWeDo.services && whatWeDo.services.length > 0)
+    ? whatWeDo.services
+    : services;
 
   const scrollToServices = () => {
     const el = document.getElementById('services');
@@ -159,7 +165,7 @@ export function WhatWeDo() {
 
         {/* 5 Service Cards — Single Horizontal Row on Desktop */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
-          {services.map((service) => (
+          {serviceCards.map((service) => (
             <ServiceModule
               key={service.id}
               service={service}

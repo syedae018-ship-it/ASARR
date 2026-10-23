@@ -4,10 +4,13 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useCursorStore } from '@/components/ui/CustomCursor';
 import { useModalStore } from '@/lib/modalStore';
+import { useWebsiteContent } from '@/lib/websiteContentContext';
 
 export function Hero() {
   const setVariant = useCursorStore((state) => state.setVariant);
   const { openProjectModal } = useModalStore();
+  const { content } = useWebsiteContent();
+  const hero = content.hero;
 
   const scrollToNext = () => {
     const nextSection = document.getElementById('services') || document.getElementById('what-we-do');
@@ -45,7 +48,7 @@ export function Hero() {
             className="flex items-center gap-3 mb-4 sm:mb-6"
           >
             <span className="font-mono text-[11px] sm:text-[12px] uppercase tracking-[0.16em] text-[#C9BFB5]">
-              IDEAS THAT LEAVE AN
+              {hero.eyebrow}
             </span>
           </motion.div>
 
@@ -56,10 +59,10 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="w-full"
           >
-            <h1 className="sr-only">ASARR — Digital experiences that create Enduring Impact</h1>
+            <h1 className="sr-only">ASARR — {hero.heading}</h1>
             <div className="relative w-full max-w-[420px] sm:max-w-[540px] h-[78px] sm:h-[105px] lg:h-[125px] mb-2">
               <Image
-                src="/images/brand/asarr_logo_white.png"
+                src={hero.logo_url || "/images/brand/asarr_logo_white.png"}
                 alt="ASARR"
                 fill
                 priority
@@ -68,7 +71,7 @@ export function Hero() {
             </div>
 
             <p className="font-serif italic text-2xl sm:text-3xl lg:text-[2.2rem] text-[#F5D5DA] font-normal tracking-[-0.01em] mt-3 sm:mt-4 leading-snug">
-              Digital experiences that create Enduring Impact.
+              {hero.heading}
             </p>
           </motion.div>
 
@@ -79,7 +82,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="font-sans font-normal text-sm sm:text-base text-[#D4CCC2] max-w-[500px] leading-[1.65] mt-5 sm:mt-6 mb-8 text-left"
           >
-            A creative and tech agency helping brands grow through strategy, content, marketing, websites and apps. We turn ideas into experiences that people remember.
+            {hero.subtext}
           </motion.p>
 
           {/* Action Buttons Row */}
@@ -97,7 +100,7 @@ export function Hero() {
               onMouseLeave={() => setVariant('default')}
               className="inline-flex items-center justify-center gap-3 px-8 sm:px-9 h-[50px] bg-white hover:bg-[#FAF6F0] text-[#11100F] text-xs font-sans font-bold uppercase tracking-[0.12em] rounded-full transition-all duration-300 shadow-[0_4px_25px_rgba(255,255,255,0.18)] hover:shadow-[0_6px_30px_rgba(255,255,255,0.28)] hover:-translate-y-0.5 cursor-pointer"
             >
-              <span>Start a Project</span>
+              <span>{hero.primary_cta_text}</span>
               <span aria-hidden="true" className="text-sm font-bold">→</span>
             </button>
           </motion.div>

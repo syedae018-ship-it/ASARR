@@ -52,12 +52,15 @@ export function Navbar() {
     }
   }, [mobileMenuOpen]);
 
+  const CRM_PORTAL_URL = process.env.NEXT_PUBLIC_CRM_URL || '/portal/auth';
+
   const navLinks = [
-    { name: 'Home', href: '#home', id: 'home' },
-    { name: 'Services', href: '#services', id: 'services' },
-    { name: 'Work', href: '#work', id: 'work' },
-    { name: 'About', href: '#philosophy', id: 'philosophy' },
-    { name: 'Contact', href: '#contact', id: 'contact' },
+    { name: 'Home', href: '/#home', id: 'home' },
+    { name: 'Services', href: '/#services', id: 'services' },
+    { name: 'Work', href: '/#work', id: 'work' },
+    { name: 'About', href: '/#philosophy', id: 'philosophy' },
+    { name: 'Contact', href: '/#contact', id: 'contact' },
+    { name: 'ASAR Portal', href: CRM_PORTAL_URL, id: 'portal', isPortal: true },
   ];
 
   return (
@@ -97,9 +100,10 @@ export function Navbar() {
           <ul className="flex items-center gap-8 lg:gap-10">
             {navLinks.map((link) => {
               const isActive = activeSection === link.id;
+              const isPortal = 'isPortal' in link && link.isPortal;
               return (
                 <li key={link.name} className="relative flex flex-col items-center">
-                  <a 
+                  <Link 
                     href={link.href}
                     className={`text-[13px] font-sans font-medium transition-colors py-1 ${
                       isScrolled
@@ -108,8 +112,8 @@ export function Navbar() {
                     }`}
                   >
                     {link.name}
-                  </a>
-                  {isActive && (
+                  </Link>
+                  {isActive && !isPortal && (
                     <motion.span 
                       layoutId="activeNavDot"
                       className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-[#6F1420]" 
@@ -168,14 +172,14 @@ export function Navbar() {
           >
             <nav className="flex flex-col gap-6">
               {navLinks.map((link) => (
-                <a 
+                <Link 
                   key={link.name}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-3xl font-sans font-medium text-[#171515] hover:text-[#6F1420] transition-colors uppercase tracking-tight"
+                  className="text-3xl font-sans font-medium text-[#171515] hover:text-[#6F1420] transition-colors uppercase tracking-tight py-1"
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
               <button 
                 type="button"

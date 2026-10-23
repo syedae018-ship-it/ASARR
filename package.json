@@ -4,13 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build:crm": "npm --prefix asarcrm run build",
+    "build:site": "next build",
+    "build": "npm run build:crm && next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.3.0",
     "@fontsource/manrope": "^5.3.0",
+    "@supabase/supabase-js": "^2.118.0",
     "@types/three": "^0.186.0",
     "clsx": "^2.1.1",
     "framer-motion": "^14.0.0",

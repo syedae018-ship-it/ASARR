@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useCursorStore } from '@/components/ui/CustomCursor';
+import { useWebsiteContent } from '@/lib/websiteContentContext';
 
 export interface SelectedProject {
   id: string;
@@ -93,6 +94,11 @@ export const approvedProjects: SelectedProject[] = [
 
 export function SelectedWork() {
   const setVariant = useCursorStore((state) => state.setVariant);
+  const { content } = useWebsiteContent();
+  const selectedWork = content.selected_work;
+  const projects = (selectedWork.projects && selectedWork.projects.length > 0)
+    ? selectedWork.projects
+    : approvedProjects;
 
   return (
     <section 
@@ -108,14 +114,14 @@ export function SelectedWork() {
           <div className="flex items-center gap-3">
             <span className="w-1.5 h-1.5 rounded-full bg-[#6F1420]" />
             <span className="font-mono text-[11px] sm:text-[12px] uppercase tracking-[0.16em] text-[#6E665E] font-semibold">
-              SELECTED WORK
+              {selectedWork.eyebrow || "SELECTED WORK"}
             </span>
           </div>
 
           <div className="hidden sm:flex items-center gap-2 text-[10.5px] sm:text-[11px] font-mono uppercase tracking-[0.14em] text-[#6E665E]">
-            <span>FIVE SELECT PRODUCTIONS</span>
+            <span>{selectedWork.title || "FIVE SELECT PRODUCTIONS"}</span>
             <span className="text-[#6F1420]">•</span>
-            <span>2025 — 2026 ARCHIVE</span>
+            <span>{selectedWork.archive_label || "2025 — 2026 ARCHIVE"}</span>
           </div>
         </div>
 
@@ -143,7 +149,7 @@ export function SelectedWork() {
         {/* 3. 12-COLUMN RESPONSIVE GRID (DESKTOP: 4-4-4 / 8-4)       */}
         {/* ========================================================= */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-7 w-full">
-          {approvedProjects.map((project) => {
+          {projects.map((project) => {
             const isWide = project.isWide;
 
             return (

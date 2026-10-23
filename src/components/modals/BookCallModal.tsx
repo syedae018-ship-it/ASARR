@@ -14,6 +14,8 @@ export function BookCallModal() {
   const [email, setEmail] = useState('');
   const [topic, setTopic] = useState('New Project Discovery');
   const [booked, setBooked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const timeSlots = [
     'Tomorrow, 2:00 PM IST',
@@ -24,13 +26,51 @@ export function BookCallModal() {
     'Thursday, 2:30 PM IST',
   ];
 
-  const handleBooking = (e: React.FormEvent) => {
+  const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBooked(true);
-    setTimeout(() => {
-      setBooked(false);
-      closeBookCall();
-    }, 2500);
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          source: 'website_book_call_modal',
+          services: [topic],
+          message: `Scheduled 30-min discovery session: "${topic}" reserved for ${selectedDate}.`,
+          custom_data: {
+            call_booking: true,
+            scheduled_slot: selectedDate,
+            topic,
+          },
+        }),
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.error || 'Unable to confirm appointment. Please try again.');
+      }
+
+      setBooked(true);
+      setTimeout(() => {
+        setBooked(false);
+        setName('');
+        setEmail('');
+        setTopic('New Project Discovery');
+        closeBookCall();
+      }, 3000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'An error occurred while booking.';
+      setErrorMessage(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -167,15 +207,32 @@ export function BookCallModal() {
                     </select>
                   </div>
 
+                  {/* Error Alert if Submission Fails */}
+                  {errorMessage && (
+                    <div className="p-3 rounded-xl bg-[#6F1420]/10 border border-[#6F1420]/30 text-[#6F1420] text-xs font-sans leading-relaxed">
+                      <strong>Booking error:</strong> {errorMessage}
+                    </div>
+                  )}
+
                   <div className="pt-2">
                     <button
                       type="submit"
+                      disabled={isSubmitting}
                       onMouseEnter={() => setVariant('button')}
                       onMouseLeave={() => setVariant('default')}
-                      className="w-full py-3.5 rounded-full bg-[#6F1420] hover:bg-[#5A0E1A] text-white font-sans font-semibold text-xs uppercase tracking-[0.12em] transition-all duration-300 shadow-md flex items-center justify-center gap-2"
+                      className="w-full py-3.5 rounded-full bg-[#6F1420] hover:bg-[#5A0E1A] disabled:opacity-60 disabled:cursor-not-allowed text-white font-sans font-semibold text-xs uppercase tracking-[0.12em] transition-all duration-300 shadow-md flex items-center justify-center gap-2"
                     >
-                      <span>CONFIRM APPOINTMENT</span>
-                      <span>🗓</span>
+                      {isSubmitting ? (
+                        <>
+                          <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span>CONFIRMING APPOINTMENT...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>CONFIRM APPOINTMENT</span>
+                          <span>🗓</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </form>

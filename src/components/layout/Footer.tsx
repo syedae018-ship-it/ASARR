@@ -1,7 +1,13 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useWebsiteContent } from '@/lib/websiteContentContext';
 
 export function Footer() {
+  const { content } = useWebsiteContent();
+  const footer = content.footer;
+
   return (
     <footer className="bg-[#11100F] text-[#FAF6F0] pt-16 sm:pt-20 pb-12 sm:pb-16 border-t border-white/10 select-none">
       <div className="w-full max-w-[1550px] mx-auto px-6 sm:px-12 lg:px-16">
@@ -18,7 +24,7 @@ export function Footer() {
             >
               <div className="relative h-8 sm:h-9 w-[130px] sm:w-[150px]">
                 <Image
-                  src="/images/brand/asarr_logo_white.png"
+                  src={content.hero.logo_url || "/images/brand/asarr_logo_white.png"}
                   alt="ASARR"
                   fill
                   className="object-contain object-left select-none"
@@ -27,7 +33,7 @@ export function Footer() {
             </Link>
 
             <p className="font-sans text-xs sm:text-sm text-[#A69E94] leading-[1.65] mt-4 mb-6 max-w-sm">
-              A creative and tech agency helping brands grow through content, marketing, websites and apps.
+              {footer.description}
             </p>
 
             {/* Social Channels Icons */}
@@ -111,6 +117,9 @@ export function Footer() {
               </li>
               <li>
                 <a href="#contact" className="hover:text-white transition-colors">Contact</a>
+              </li>
+              <li>
+                <Link href="/portal/auth" className="hover:text-white transition-colors text-[#F5D5DA] font-medium">ASAR Portal</Link>
               </li>
             </ul>
           </div>

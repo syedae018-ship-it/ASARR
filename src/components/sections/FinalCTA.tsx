@@ -3,10 +3,13 @@
 import Image from 'next/image';
 import { useCursorStore } from '@/components/ui/CustomCursor';
 import { useModalStore } from '@/lib/modalStore';
+import { useWebsiteContent } from '@/lib/websiteContentContext';
 
 export function FinalCTA() {
   const setVariant = useCursorStore((state) => state.setVariant);
   const { openProjectModal, openBookCall } = useModalStore();
+  const { content } = useWebsiteContent();
+  const cta = content.final_cta;
 
   return (
     <section 
@@ -37,23 +40,23 @@ export function FinalCTA() {
             <div className="flex items-center gap-2.5 sm:gap-3 mb-4 sm:mb-5">
               <span className="w-2 h-2 rounded-full bg-[#BC535D] shadow-[0_0_8px_rgba(188,83,93,0.6)]" />
               <span className="font-mono text-[10.5px] sm:text-[11.5px] uppercase tracking-[0.18em] text-[#A69996] font-medium">
-                LET&apos;S BUILD TOGETHER
+                {cta.eyebrow || "LET'S BUILD TOGETHER"}
               </span>
             </div>
 
             {/* Headline Composition: Precise Two-Line Contrast */}
             <h2 className="text-[2.2rem] sm:text-5xl lg:text-[4.15rem] font-sans font-extrabold uppercase tracking-[-0.03em] leading-[1.04] text-white">
-              <span className="block">READY TO CREATE</span>
+              <span className="block">{cta.heading_line1 || "READY TO CREATE"}</span>
               <span className="block mt-1.5 sm:mt-2.5">
-                <span className="font-serif italic font-normal text-white uppercase">YOUR NEXT</span>{' '}
-                <span className="font-serif font-bold text-[#A8283B] uppercase">ASARR</span>{' '}
+                <span className="font-serif italic font-normal text-white uppercase">{cta.heading_line2_prefix || "YOUR NEXT"}</span>{' '}
+                <span className="font-serif font-bold text-[#A8283B] uppercase">{cta.heading_line2_brand || "ASARR"}</span>{' '}
                 <span className="font-serif font-normal text-white">?</span>
               </span>
             </h2>
 
             {/* Supporting Paragraph */}
             <p className="font-sans text-xs sm:text-sm lg:text-[14.5px] text-[#C2B7AC] max-w-lg leading-[1.65] mt-5 sm:mt-6 mb-7 sm:mb-9">
-              Let&apos;s bring your ideas to life with powerful content, marketing and technology. Reach out to schedule a consultation with our leadership.
+              {cta.description}
             </p>
 
             {/* Action Buttons Row */}
@@ -67,7 +70,7 @@ export function FinalCTA() {
                 onMouseLeave={() => setVariant('default')}
                 className="inline-flex items-center justify-center gap-2.5 px-7 sm:px-8 h-[44px] sm:h-[46px] bg-[#FCFBF9] hover:bg-white text-[#151313] text-[11px] sm:text-xs font-sans font-bold uppercase tracking-[0.10em] rounded-full transition-all duration-300 shadow-[0_4px_22px_rgba(255,255,255,0.22)] hover:shadow-[0_6px_28px_rgba(255,255,255,0.32)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
               >
-                <span>START A PROJECT</span>
+                <span>{cta.primary_cta_text}</span>
                 <span aria-hidden="true" className="text-sm font-bold">→</span>
               </button>
 
@@ -79,7 +82,7 @@ export function FinalCTA() {
                 onMouseLeave={() => setVariant('default')}
                 className="inline-flex items-center justify-center gap-2.5 px-6 sm:px-7 h-[44px] sm:h-[46px] bg-[#18080C]/80 hover:bg-[#250C13] border border-[#7A222F]/70 hover:border-[#A8283B] text-white text-[11px] sm:text-xs font-sans font-semibold uppercase tracking-[0.10em] rounded-full transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer backdrop-blur-sm"
               >
-                <span>BOOK A CALL</span>
+                <span>{cta.secondary_cta_text}</span>
                 {/* Custom Crisp Calendar Icon */}
                 <svg 
                   className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" 

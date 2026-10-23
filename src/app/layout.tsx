@@ -54,6 +54,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { WebsiteContentProvider } from '@/lib/websiteContentContext';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -64,12 +66,14 @@ export default function RootLayout({
       <body 
         className={`${anton.variable} ${ibmPlexMono.variable} ${pinyonScript.variable} font-sans bg-background text-foreground min-h-screen flex flex-col antialiased selection:bg-primary/20 selection:text-primary custom-cursor-active overflow-x-clip`}
       >
-        <CustomCursor />
-        <Navbar />
-        <main className="flex-grow overflow-x-clip">
-          {children}
-        </main>
-        <Footer />
+        <WebsiteContentProvider>
+          <CustomCursor />
+          <Navbar />
+          <main className="flex-grow overflow-x-clip">
+            {children}
+          </main>
+          <Footer />
+        </WebsiteContentProvider>
       </body>
     </html>
   );

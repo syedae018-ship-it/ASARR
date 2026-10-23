@@ -19,6 +19,8 @@ export function ProjectModal() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const toggleService = (svc: string) => {
     setFormData((prev) => ({
@@ -29,13 +31,53 @@ export function ProjectModal() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      closeProjectModal();
-    }, 2500);
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          company: formData.company,
+          budget: formData.budget,
+          services: formData.services,
+          message: formData.message,
+          source: 'website_project_modal',
+        }),
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.error || 'Failed to submit inquiry. Please try again.');
+      }
+
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          budget: '$15k - $30k',
+          services: [],
+          message: '',
+        });
+        closeProjectModal();
+      }, 3000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'An error occurred while submitting.';
+      setErrorMessage(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const serviceOptions = [
@@ -216,16 +258,33 @@ export function ProjectModal() {
                     />
                   </div>
 
+                  {/* Error Alert if Submission Fails */}
+                  {errorMessage && (
+                    <div className="p-3.5 rounded-xl bg-[#6F1420]/10 border border-[#6F1420]/30 text-[#6F1420] text-xs font-sans leading-relaxed">
+                      <strong>Submission error:</strong> {errorMessage}
+                    </div>
+                  )}
+
                   {/* Submit Button */}
                   <div className="pt-2">
                     <button
                       type="submit"
+                      disabled={isSubmitting}
                       onMouseEnter={() => setVariant('button')}
                       onMouseLeave={() => setVariant('default')}
-                      className="w-full py-4 rounded-full bg-[#6F1420] hover:bg-[#5A0E1A] text-white font-sans font-semibold text-xs uppercase tracking-[0.12em] transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-3"
+                      className="w-full py-4 rounded-full bg-[#6F1420] hover:bg-[#5A0E1A] disabled:opacity-60 disabled:cursor-not-allowed text-white font-sans font-semibold text-xs uppercase tracking-[0.12em] transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-3"
                     >
-                      <span>SEND INQUIRY</span>
-                      <span>→</span>
+                      {isSubmitting ? (
+                        <>
+                          <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span>SENDING INQUIRY...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>SEND INQUIRY</span>
+                          <span>→</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </form>

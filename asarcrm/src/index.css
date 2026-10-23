@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Warm Beige & Linen Backgrounds */
+    --background: 38 33% 96%;        /* #FAF7F2 Warm Cream Beige */
+    --foreground: 350 27% 10%;        /* #201214 Deep Espresso Charcoal */
+
+    --card: 0 0% 100%;               /* #FFFFFF Clean Surface */
+    --card-foreground: 350 27% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 350 27% 10%;
+
+    /* Maroon Primary Palette */
+    --primary: 351 64% 29%;          /* #7A1B28 Deep Royal Maroon */
+    --primary-foreground: 38 40% 96%; /* #FAF7F2 Soft Ivory Beige */
+
+    --secondary: 38 35% 91%;         /* #F3EDE2 Soft Muted Sand */
+    --secondary-foreground: 350 27% 18%;
+
+    --muted: 38 30% 92%;             /* #F3EDE3 */
+    --muted-foreground: 18 13% 42%;  /* #77655D Warm Taupe */
+
+    --accent: 351 40% 94%;           /* #FBF0F1 Delicate Maroon/Rose tint */
+    --accent-foreground: 351 64% 26%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 37 30% 84%;            /* #E5DACB Warm Beige Border */
+    --input: 37 30% 84%;
+    --ring: 351 64% 29%;
+
+    --radius: 0.75rem;
+
+    /* Deep Luxury Maroon Sidebar */
+    --sidebar-background: 348 68% 12%;       /* #330A11 */
+    --sidebar-foreground: 38 40% 92%;        /* #F7EFE4 Warm Beige */
+    --sidebar-primary: 351 64% 45%;          /* #B93246 */
+    --sidebar-primary-foreground: 38 40% 96%;
+    --sidebar-accent: 348 50% 18%;           /* #451219 */
+    --sidebar-accent-foreground: 38 50% 95%;
+    --sidebar-border: 348 45% 19%;
+    --sidebar-ring: 351 64% 45%;
+
+    /* Status Tokens */
+    --success: 145 63% 38%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 48%;
+    --warning-foreground: 0 0% 100%;
+    --info: 351 55% 42%;
+    --info-foreground: 0 0% 100%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(351, 64%, 29%), hsl(345, 60%, 22%));
+    --gradient-card: linear-gradient(180deg, #FFFFFF, hsl(38, 30%, 97%));
+    --gradient-glow: radial-gradient(ellipse at center, hsl(351, 64%, 29%, 0.12), transparent 70%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px 0 hsl(350 20% 15% / 0.05);
+    --shadow-md: 0 8px 24px -6px hsl(350 25% 15% / 0.08);
+    --shadow-lg: 0 18px 45px -12px hsl(350 25% 15% / 0.12);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight text-foreground;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-card/95 backdrop-blur-md border border-border/80 shadow-sm;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-primary);
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
