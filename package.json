@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build:crm": "npm --prefix asarcrm run build",
+    "build:crm": "node -e \"const fs = require('fs'), cp = require('child_process'); if (fs.existsSync('asarcrm/node_modules/vite')) { cp.execSync('npm --prefix asarcrm run build', { stdio: 'inherit' }); } else { console.log('[build:crm] Using precompiled portal assets in public/portal'); }\"",
     "build:site": "next build",
     "build": "npm run build:crm && next build",
     "start": "next start",
