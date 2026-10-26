@@ -43,17 +43,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     enabled: !!user?.id,
   });
 
-  const primaryHex = (profile?.primary_color && profile.primary_color !== '#6657E8') 
-    ? profile.primary_color 
-    : '#7A1B28';
-  const primaryColorHsl = hexToHsl(primaryHex);
+  // ASARR Signature Palette: Uncompromising Royal Maroon (#7A1B28) & Warm Beige Monochrome
+  const ASARR_MAROON_HSL = '351 64% 29%';
+  const ASARR_BEIGE_HSL = '38 40% 96%';
 
   return (
     <div
       className="flex min-h-screen w-full bg-background"
       style={{
-        '--primary': primaryColorHsl,
-        '--primary-foreground': '38 40% 96%',
+        '--primary': ASARR_MAROON_HSL,
+        '--primary-foreground': ASARR_BEIGE_HSL,
+        '--ring': ASARR_MAROON_HSL,
       } as React.CSSProperties}
     >
       <Sidebar

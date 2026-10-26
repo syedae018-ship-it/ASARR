@@ -164,7 +164,7 @@ export default function Settings() {
             company_phone: data.company_phone || '',
             company_address: data.company_address || '',
             terms_and_conditions: data.terms_and_conditions || '',
-            primary_color: data.primary_color || '#7A1B28',
+            primary_color: (data.primary_color && !['#2563eb', '#1e3a8a', '#3b82f6', '#6657e8'].includes(data.primary_color.toLowerCase())) ? data.primary_color : '#7A1B28',
             secondary_color: data.secondary_color || '#330A11',
             portfolio_headline: data.portfolio_headline || 'Selected Works',
             portfolio_subheadline: data.portfolio_subheadline || 'Crafted digital experiences, brand identities, and high-performance applications.',
@@ -208,13 +208,14 @@ export default function Settings() {
     enabled: !!user
   });
 
-  // Real-time color preview
+  // Real-time color preview (enforcing ASARR Royal Maroon & Beige monochrome)
   useEffect(() => {
     const root = document.documentElement;
-    if (brandSettings.primary_color) {
-      root.style.setProperty('--primary', hexToHsl(brandSettings.primary_color));
-      root.style.setProperty('--ring', hexToHsl(brandSettings.primary_color));
-    }
+    const color = (brandSettings.primary_color && !['#2563eb', '#1e3a8a', '#3b82f6', '#6657e8'].includes(brandSettings.primary_color.toLowerCase()))
+      ? brandSettings.primary_color
+      : '#7A1B28';
+    root.style.setProperty('--primary', hexToHsl(color));
+    root.style.setProperty('--ring', hexToHsl(color));
   }, [brandSettings.primary_color]);
 
   const updateProfile = useMutation({
@@ -698,13 +699,11 @@ export default function Settings() {
                   <Label>Color Presets</Label>
                   <div className="flex flex-wrap gap-3">
                     {[
-                      { name: 'ASARR Maroon & Beige', primary: '#7A1B28', secondary: '#F3EDE2' },
-                      { name: 'Royal Blue', primary: '#2563EB', secondary: '#1E3A8A' },
-                      { name: 'Emerald', primary: '#10B981', secondary: '#064E3B' },
-                      { name: 'Warm Terracotta', primary: '#B93246', secondary: '#F7EFE4' },
-                      { name: 'Sunset', primary: '#F97316', secondary: '#7C2D12' },
-                      { name: 'Midnight', primary: '#0F172A', secondary: '#64748B' },
-                      { name: 'Rose', primary: '#E11D48', secondary: '#881337' },
+                      { name: 'ASARR Royal Maroon', primary: '#7A1B28', secondary: '#F3EDE2' },
+                      { name: 'ASARR Burgundy Noir', primary: '#5C0612', secondary: '#FAF7F2' },
+                      { name: 'ASARR Crimson Silk', primary: '#8B1E2E', secondary: '#F3EDE2' },
+                      { name: 'ASARR Warm Terracotta', primary: '#B93246', secondary: '#F7EFE4' },
+                      { name: 'ASARR Velvet Espresso', primary: '#330A11', secondary: '#FAF7F2' },
                     ].map((preset) => (
                       <button
                         key={preset.name}
