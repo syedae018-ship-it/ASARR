@@ -569,22 +569,23 @@ export default function LeadForms() {
           }
         }}
       >
-        <DialogContent className="max-w-5xl w-[95vw] h-[92vh] max-h-[92vh] flex flex-col p-0 gap-0 bg-background overflow-hidden border border-border shadow-2xl rounded-xl">
+        <DialogContent className="w-[96vw] max-w-5xl h-[94vh] max-h-[94vh] flex flex-col p-0 gap-0 bg-background overflow-hidden border border-border shadow-2xl rounded-2xl">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 px-6 border-b border-border shrink-0 bg-muted/30">
-            <div>
-              <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" />
-                {selectedForm?.id ? "Edit Lead Form" : "Create New Lead Form"}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 px-4 sm:px-6 border-b border-border shrink-0 bg-muted/30 gap-3">
+            <div className="space-y-0.5">
+              <DialogTitle className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary shrink-0" />
+                <span>{selectedForm?.id ? "Edit Lead Form" : "Create New Lead Form"}</span>
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+              <DialogDescription className="text-xs text-muted-foreground line-clamp-1 sm:line-clamp-none">
                 Design fields, configure submission triggers, and preview the live visitor experience.
               </DialogDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 self-end sm:self-auto">
               <Button
                 variant="outline"
                 size="sm"
+                className="text-xs"
                 onClick={() => {
                   if (!isDirty || confirm("Discard unsaved changes?")) {
                     setIsEditorOpen(false);
@@ -596,7 +597,7 @@ export default function LeadForms() {
               </Button>
               <Button
                 size="sm"
-                className="bg-primary text-primary-foreground shadow-sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm text-xs"
                 onClick={handleSave}
                 disabled={isSaving}
               >
@@ -612,25 +613,25 @@ export default function LeadForms() {
               onValueChange={(val) => setActiveTab(val as any)}
               className="flex-1 flex flex-col min-h-0 overflow-hidden"
             >
-              <div className="border-b border-border px-6 bg-background flex items-center justify-between shrink-0">
-                <TabsList className="bg-transparent h-12 gap-6 p-0">
+              <div className="border-b border-border px-3 sm:px-6 bg-background flex items-center justify-between shrink-0 overflow-x-auto no-scrollbar">
+                <TabsList className="bg-transparent h-11 sm:h-12 gap-3 sm:gap-6 p-0 shrink-0">
                   <TabsTrigger
                     value="fields"
-                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none px-1 h-full text-sm font-semibold"
+                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none px-1 h-full text-xs sm:text-sm font-semibold"
                   >
                     1. Form Fields ({selectedForm.fields.length})
                   </TabsTrigger>
                   <TabsTrigger
                     value="settings"
-                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none px-1 h-full text-sm font-semibold"
+                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none px-1 h-full text-xs sm:text-sm font-semibold"
                   >
                     2. Settings & Feedback
                   </TabsTrigger>
                   <TabsTrigger
                     value="preview"
-                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none px-1 h-full text-sm font-semibold flex items-center gap-1.5"
+                    className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none px-1 h-full text-xs sm:text-sm font-semibold flex items-center gap-1.5"
                   >
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     3. Live Preview
                   </TabsTrigger>
                 </TabsList>
@@ -639,7 +640,7 @@ export default function LeadForms() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 text-xs text-muted-foreground gap-1.5"
+                    className="hidden sm:flex h-8 text-xs text-muted-foreground gap-1.5 shrink-0"
                     onClick={() => window.open(getPublicLink(selectedForm.id), '_blank')}
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -650,38 +651,40 @@ export default function LeadForms() {
 
               {/* TAB 1: FORM FIELDS BUILDER */}
               <TabsContent value="fields" className="flex-1 min-h-0 overflow-hidden m-0 mt-0 flex flex-col md:flex-row bg-muted/10">
-                {/* Left Palette */}
-                <div className="w-full md:w-80 shrink-0 border-r border-border bg-card p-4 h-full overflow-y-auto space-y-4">
-                  <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                      Add Form Element
-                    </h4>
-                    <p className="text-[11px] text-muted-foreground">Click any field to append to your form layout.</p>
+                {/* Left/Top Element Palette */}
+                <div className="w-full md:w-80 shrink-0 border-b md:border-b-0 md:border-r border-border bg-card p-3 sm:p-4 max-h-48 md:max-h-none md:h-full overflow-y-auto space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Add Form Element
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground hidden sm:block">Click any field to append to your form layout.</p>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground md:hidden font-medium">Scroll down for canvas ↓</span>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-1 gap-2">
                     {FIELD_TYPES.map((ft) => (
                       <button
                         key={ft.type}
                         type="button"
                         onClick={() => addField(ft.type)}
-                        className="flex items-center gap-3 p-2.5 rounded-lg border border-border/60 bg-background hover:bg-muted/60 text-left hover:border-primary/50 transition-all group"
+                        className="flex items-center gap-2.5 p-2 sm:p-2.5 rounded-lg border border-border/60 bg-background hover:bg-muted/60 text-left hover:border-primary/50 transition-all group"
                       >
-                        <div className="p-2 rounded-md bg-muted text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                          <ft.icon className="w-4 h-4" />
+                        <div className="p-1.5 sm:p-2 rounded-md bg-muted text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors shrink-0">
+                          <ft.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs font-semibold text-foreground">{ft.label}</div>
-                          <div className="text-[10px] text-muted-foreground truncate">{ft.description}</div>
+                          <div className="text-xs font-semibold text-foreground truncate">{ft.label}</div>
+                          <div className="text-[10px] text-muted-foreground truncate hidden md:block">{ft.description}</div>
                         </div>
-                        <Plus className="w-4 h-4 text-muted-foreground opacity-40 group-hover:opacity-100 group-hover:text-primary transition-all shrink-0" />
+                        <Plus className="w-3.5 h-3.5 text-muted-foreground opacity-40 group-hover:opacity-100 group-hover:text-primary transition-all shrink-0 ml-auto" />
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Main Canvas & Field Configurator */}
-                <div className="flex-1 h-full overflow-y-auto p-4 md:p-8 space-y-6">
+                <div className="flex-1 min-h-0 h-full overflow-y-auto p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
                   {/* Form Meta Box */}
                   <div className="max-w-3xl mx-auto bg-card border border-border rounded-xl p-5 shadow-sm space-y-3">
                     <div className="space-y-1">
@@ -742,56 +745,58 @@ export default function LeadForms() {
                             )}
                           >
                             {/* Summary Bar */}
-                            <div className="flex items-center gap-3 p-3.5">
-                              {/* Reorder Buttons */}
-                              <div className="flex flex-col gap-0.5 shrink-0">
-                                <button
-                                  type="button"
-                                  disabled={idx === 0}
-                                  onClick={() => moveField(idx, 'up')}
-                                  className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-20 transition-colors"
-                                  title="Move Up"
-                                >
-                                  <ChevronUp className="w-4 h-4" />
-                                </button>
-                                <button
-                                  type="button"
-                                  disabled={idx === selectedForm.fields.length - 1}
-                                  onClick={() => moveField(idx, 'down')}
-                                  className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-20 transition-colors"
-                                  title="Move Down"
-                                >
-                                  <ChevronDown className="w-4 h-4" />
-                                </button>
-                              </div>
-
-                              {/* Field Icon & Type */}
-                              <div className="p-2 rounded-lg bg-muted text-muted-foreground shrink-0">
-                                {typeMeta?.icon && <typeMeta.icon className="w-4 h-4" />}
-                              </div>
-
-                              {/* Label / Summary */}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-semibold text-foreground truncate">
-                                    {field.label}
-                                  </span>
-                                  {field.required && (
-                                    <Badge variant="destructive" className="text-[10px] py-0 px-1.5 h-4">
-                                      Required
-                                    </Badge>
-                                  )}
-                                  <span className="text-[10px] text-muted-foreground font-mono">
-                                    [{field.width === 'half' ? 'Half Width' : 'Full Width'}]
-                                  </span>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5">
+                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                {/* Reorder Buttons */}
+                                <div className="flex flex-col gap-0.5 shrink-0">
+                                  <button
+                                    type="button"
+                                    disabled={idx === 0}
+                                    onClick={() => moveField(idx, 'up')}
+                                    className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-20 transition-colors"
+                                    title="Move Up"
+                                  >
+                                    <ChevronUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={idx === selectedForm.fields.length - 1}
+                                    onClick={() => moveField(idx, 'down')}
+                                    className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-20 transition-colors"
+                                    title="Move Down"
+                                  >
+                                    <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                  </button>
                                 </div>
-                                <div className="text-xs text-muted-foreground truncate">
-                                  Placeholder: {field.placeholder || "(none)"}
+
+                                {/* Field Icon & Type */}
+                                <div className="p-2 rounded-lg bg-muted text-muted-foreground shrink-0">
+                                  {typeMeta?.icon && <typeMeta.icon className="w-4 h-4" />}
+                                </div>
+
+                                {/* Label / Summary */}
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex flex-wrap items-center gap-1.5">
+                                    <span className="text-sm font-semibold text-foreground truncate max-w-[200px] sm:max-w-none">
+                                      {field.label}
+                                    </span>
+                                    {field.required && (
+                                      <Badge variant="destructive" className="text-[10px] py-0 px-1.5 h-4">
+                                        Required
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground truncate">
+                                    {field.placeholder ? `Placeholder: ${field.placeholder}` : `Type: ${field.type}`}
+                                  </div>
                                 </div>
                               </div>
 
                               {/* Actions */}
-                              <div className="flex items-center gap-1 shrink-0">
+                              <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-border/40 w-full sm:w-auto justify-end">
+                                <span className="text-[10px] text-muted-foreground font-mono bg-muted/60 px-1.5 py-0.5 rounded">
+                                  {field.width === 'half' ? 'Half Width' : 'Full Width'}
+                                </span>
                                 <Button
                                   variant={isExpanded ? "secondary" : "ghost"}
                                   size="sm"

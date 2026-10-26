@@ -202,7 +202,7 @@ export default function Tasks() {
               New Task
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create Task</DialogTitle>
             </DialogHeader>
@@ -308,25 +308,25 @@ export default function Tasks() {
 
       {/* Filter Tabs */}
       <Tabs value={activeTab} onValueChange={(val: any) => setActiveTab(val)}>
-        <TabsList className="bg-muted/70 p-1 rounded-xl">
-          <TabsTrigger value="mine" className="gap-2 rounded-lg data-[state=active]:bg-card text-xs">
-            <User className="w-3.5 h-3.5" />
-            My Tasks ({tasks.filter(t => !t.completed && (t.assigned_to === user?.id || (!t.assigned_to && t.user_id === user?.id))).length})
+        <TabsList className="w-full grid grid-cols-2 sm:grid-cols-5 h-auto gap-1 bg-muted/70 p-1 rounded-xl">
+          <TabsTrigger value="mine" className="gap-1.5 rounded-lg data-[state=active]:bg-card text-xs py-2">
+            <User className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">My Tasks ({tasks.filter(t => !t.completed && (t.assigned_to === user?.id || (!t.assigned_to && t.user_id === user?.id))).length})</span>
           </TabsTrigger>
-          <TabsTrigger value="team" className="gap-2 rounded-lg data-[state=active]:bg-card text-xs">
-            <Users className="w-3.5 h-3.5" />
-            Team Tasks ({tasks.filter(t => !t.completed && (t.is_group_task || t.assigned_to !== user?.id)).length})
+          <TabsTrigger value="team" className="gap-1.5 rounded-lg data-[state=active]:bg-card text-xs py-2">
+            <Users className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Team ({tasks.filter(t => !t.completed && (t.is_group_task || t.assigned_to !== user?.id)).length})</span>
           </TabsTrigger>
-          <TabsTrigger value="overdue" className="gap-2 rounded-lg data-[state=active]:bg-card text-xs">
-            <AlertCircle className="w-3.5 h-3.5 text-rose-500" />
-            Overdue
+          <TabsTrigger value="overdue" className="gap-1.5 rounded-lg data-[state=active]:bg-card text-xs py-2">
+            <AlertCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+            <span className="truncate">Overdue</span>
           </TabsTrigger>
-          <TabsTrigger value="all" className="gap-2 rounded-lg data-[state=active]:bg-card text-xs">
-            All Tasks
+          <TabsTrigger value="all" className="gap-1.5 rounded-lg data-[state=active]:bg-card text-xs py-2">
+            <span className="truncate">All Tasks</span>
           </TabsTrigger>
-          <TabsTrigger value="done" className="gap-2 rounded-lg data-[state=active]:bg-card text-xs">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-            Completed
+          <TabsTrigger value="done" className="gap-1.5 rounded-lg data-[state=active]:bg-card text-xs py-2 col-span-2 sm:col-span-1">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+            <span className="truncate">Completed</span>
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -334,7 +334,7 @@ export default function Tasks() {
       {/* Task List */}
       <div className="space-y-2">
         {filteredTasks.length === 0 ? (
-          <div className="glass rounded-xl p-10 text-center text-muted-foreground">
+          <div className="glass rounded-xl p-8 sm:p-10 text-center text-muted-foreground">
             <CheckCircle2 className="w-8 h-8 mx-auto mb-2 opacity-40 text-emerald-500" />
             <p className="font-medium text-foreground">No tasks in this view</p>
             <p className="text-xs mt-1">All clear or no tasks match this filter tab.</p>
@@ -344,23 +344,23 @@ export default function Tasks() {
             <div
               key={task.id}
               className={cn(
-                "p-3.5 rounded-xl border flex items-center justify-between gap-4 transition-all bg-card/60 hover:bg-card shadow-xs",
+                "p-3 sm:p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 transition-all bg-card/60 hover:bg-card shadow-xs",
                 task.completed && "opacity-60 bg-muted/20"
               )}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
                 <input
                   type="checkbox"
                   checked={task.completed}
                   onChange={() => toggleTask.mutate({ id: task.id, completed: task.completed })}
-                  className="w-4 h-4 rounded text-primary border-border focus:ring-primary cursor-pointer"
+                  className="w-4 h-4 mt-0.5 sm:mt-0 rounded text-primary border-border focus:ring-primary cursor-pointer shrink-0"
                 />
-                <div>
-                  <div className={cn("text-xs font-semibold text-foreground", task.completed && "line-through text-muted-foreground")}>
+                <div className="min-w-0 flex-1">
+                  <div className={cn("text-xs sm:text-sm font-semibold text-foreground break-words", task.completed && "line-through text-muted-foreground")}>
                     {task.title}
                   </div>
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
-                    <span>{task.projects?.name || "General"}</span>
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                    <span className="font-medium text-foreground/80">{task.projects?.name || "General"}</span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
                       <User className="w-3 h-3" />
@@ -376,21 +376,24 @@ export default function Tasks() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <Badge className={cn("text-[10px] font-medium border-0 capitalize", priorityColors[task.priority] || priorityColors.medium)}>
-                  {task.priority}
-                </Badge>
+              <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
+                <div className="flex items-center gap-2">
+                  <Badge className={cn("text-[10px] font-medium border-0 capitalize", priorityColors[task.priority] || priorityColors.medium)}>
+                    {task.priority}
+                  </Badge>
 
-                {task.due_date && (
-                  <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-mono">
-                    <Clock className="w-3 h-3" />
-                    {format(parseISO(task.due_date), "dd MMM")}
-                  </span>
-                )}
+                  {task.due_date && (
+                    <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-mono">
+                      <Clock className="w-3 h-3" />
+                      {format(parseISO(task.due_date), "dd MMM")}
+                    </span>
+                  )}
+                </div>
 
                 <button
                   onClick={() => deleteTask.mutate(task.id)}
-                  className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+                  className="p-1 text-muted-foreground hover:text-destructive transition-colors ml-auto sm:ml-0"
+                  title="Delete task"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

@@ -229,7 +229,8 @@ export default function Expenses() {
       if (!formVendor.trim()) throw new Error("Vendor or merchant name is required.");
 
       const targetPaidBy = isAdminOrOwner && formPaidBy ? formPaidBy : user?.id;
-      if (!targetPaidBy) throw new Error("Payer identity required.");
+      const finalPaidBy = targetPaidBy || user?.id || profile?.id;
+      if (!finalPaidBy) throw new Error("Payer identity required. Please log in.");
 
       const payload = {
         title: formTitle.trim(),
@@ -239,10 +240,10 @@ export default function Expenses() {
         category: formCategory,
         vendor: formVendor.trim(),
         payment_method: formPaymentMethod,
-        paid_by: targetPaidBy,
-        created_by: user?.id,
-        client_id: formClientId || null,
-        project_id: formProjectId || null,
+        paid_by: finalPaidBy,
+        created_by: user?.id || finalPaidBy,
+        client_id: formClientId && formClientId !== "none" ? formClientId : null,
+        project_id: formProjectId && formProjectId !== "none" ? formProjectId : null,
         description: formDescription.trim() || null,
         notes: formNotes.trim() || null,
         receipt_url: formReceiptUrl || null,
@@ -914,12 +915,12 @@ export default function Expenses() {
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold">Related Project (Optional)</Label>
-                <Select value={formProjectId} onValueChange={setFormProjectId}>
+                <Select value={formProjectId || "none"} onValueChange={(val) => setFormProjectId(val === "none" ? "" : val)}>
                   <SelectTrigger className="text-xs">
                     <SelectValue placeholder="Select linked project..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No Project Linked</SelectItem>
+                    <SelectItem value="none">No Project Linked</SelectItem>
                     {projects.map((p) => (
                       <SelectItem key={p.id} value={p.id} className="text-xs">
                         {p.name}

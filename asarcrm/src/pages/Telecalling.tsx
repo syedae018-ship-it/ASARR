@@ -736,21 +736,21 @@ export default function Telecalling() {
 
           {/* Contact Table */}
           <Card className="border-border/60 shadow-sm overflow-hidden">
-            <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
-              <div>
+            <CardHeader className="p-4 sm:p-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-0.5">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
                   <PhoneCall className="w-4 h-4 text-primary" />
                   Outreach Calling Queue ({filteredContacts.length})
                 </CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground">
                   Active contact leads segmented by business niche and campaign
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 text-xs border-primary/20 hover:bg-primary/5"
+                  className="flex-1 sm:flex-none h-8 text-xs border-primary/20 hover:bg-primary/5"
                   onClick={() => setIsImportOpen(true)}
                 >
                   <Upload className="w-3.5 h-3.5 mr-1.5 text-primary" />
@@ -758,7 +758,7 @@ export default function Telecalling() {
                 </Button>
                 <Button
                   size="sm"
-                  className="h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
+                  className="flex-1 sm:flex-none h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
                   onClick={() => setIsAddContactOpen(true)}
                 >
                   <Plus className="w-3.5 h-3.5 mr-1.5" />

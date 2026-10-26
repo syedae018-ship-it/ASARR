@@ -465,6 +465,10 @@ export default function Portfolio() {
       };
 
       localStorage.setItem("asarr_local_website_draft", JSON.stringify(draftContent));
+      localStorage.setItem("asarr_published_website_content", JSON.stringify(payload));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("asarr_website_content_published", { detail: payload }));
+      }
 
       // 1. Save published row
       const { error: pubErr } = await supabase.from("website_content").upsert(payload, { onConflict: "id" });
@@ -498,6 +502,9 @@ export default function Portfolio() {
       queryClient.invalidateQueries({ queryKey: ["website_content_editor"] });
       setPublishedVersion(ver);
       setIsDirty(false);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("asarr_website_content_published"));
+      }
       toast.success(`Published v${ver} live to ASARR website in real-time!`);
     },
     onError: (err: any) => {

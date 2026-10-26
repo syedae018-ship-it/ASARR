@@ -20,6 +20,29 @@ export function WebsiteContentProvider({ children }: { children: React.ReactNode
   const [content, setContent] = useState<WebsiteContentData>(defaultWebsiteContent);
   const [isLoading, setIsLoading] = useState(true);
 
+  const formatPublishedData = (data: any): WebsiteContentData => {
+    return {
+      hero: { ...defaultWebsiteContent.hero, ...(data.hero || {}) },
+      what_we_do: {
+        ...defaultWebsiteContent.what_we_do,
+        ...(data.what_we_do || {}),
+        services: Array.isArray(data.services) && data.services.length > 0
+          ? data.services
+          : defaultWebsiteContent.what_we_do.services,
+      },
+      selected_work: {
+        ...defaultWebsiteContent.selected_work,
+        ...(data.selected_work_meta || {}),
+        projects: Array.isArray(data.selected_work) && data.selected_work.length > 0
+          ? data.selected_work
+          : defaultWebsiteContent.selected_work.projects,
+      },
+      final_cta: { ...defaultWebsiteContent.final_cta, ...(data.final_cta || {}) },
+      footer: { ...defaultWebsiteContent.footer, ...(data.footer || {}) },
+      brand_tokens: { ...defaultWebsiteContent.brand_tokens, ...(data.brand_tokens || {}) },
+    };
+  };
+
   const fetchPublishedContent = async () => {
     try {
       const { data, error } = await supabase
@@ -29,29 +52,22 @@ export function WebsiteContentProvider({ children }: { children: React.ReactNode
         .maybeSingle();
 
       if (!error && data) {
-        setContent({
-          hero: { ...defaultWebsiteContent.hero, ...(data.hero || {}) },
-          what_we_do: {
-            ...defaultWebsiteContent.what_we_do,
-            ...(data.what_we_do || {}),
-            services: Array.isArray(data.services) && data.services.length > 0
-              ? data.services
-              : defaultWebsiteContent.what_we_do.services,
-          },
-          selected_work: {
-            ...defaultWebsiteContent.selected_work,
-            ...(data.selected_work_meta || {}),
-            projects: Array.isArray(data.selected_work) && data.selected_work.length > 0
-              ? data.selected_work
-              : defaultWebsiteContent.selected_work.projects,
-          },
-          final_cta: { ...defaultWebsiteContent.final_cta, ...(data.final_cta || {}) },
-          footer: { ...defaultWebsiteContent.footer, ...(data.footer || {}) },
-          brand_tokens: { ...defaultWebsiteContent.brand_tokens, ...(data.brand_tokens || {}) },
-        });
+        const formatted = formatPublishedData(data);
+        setContent(formatted);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('asarr_published_website_content', JSON.stringify(data));
+        }
+      } else if (typeof window !== 'undefined') {
+        // Fallback to local published cache if Supabase is temporarily offline
+        const cached = localStorage.getItem('asarr_published_website_content');
+        if (cached) {
+          try {
+            setContent(formatPublishedData(JSON.parse(cached)));
+          } catch (_) {}
+        }
       }
     } catch (err) {
-      console.warn('[Website Content] Fallback to default website content:', err);
+      console.warn('[Website Content] Fallback to default/cached website content:', err);
     } finally {
       setIsLoading(false);
     }
@@ -59,12 +75,69 @@ export function WebsiteContentProvider({ children }: { children: React.ReactNode
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      if (!mounted) return;
-      await fetchPublishedContent();
-    })();
+
+    // 1. Initial Local Cache Hydration (Instant)
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('asarr_published_website_content');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (mounted) setContent(formatPublishedData(parsed));
+        } catch (_) {}
+      }
+    }
+
+    // 2. Fetch from Supabase
+    fetchPublishedContent();
+
+    // 3. Supabase Realtime Subscription
+    const channel = supabase
+      .channel('website_content_published_sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'website_content', filter: 'id=eq.published' },
+        (payload: any) => {
+          if (payload.new && mounted) {
+            setContent(formatPublishedData(payload.new));
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('asarr_published_website_content', JSON.stringify(payload.new));
+            }
+          } else {
+            fetchPublishedContent();
+          }
+        }
+      )
+      .subscribe();
+
+    // 4. Cross-tab & In-App Custom Event Listeners
+    const handleLocalPublish = (e: any) => {
+      if (e?.detail && mounted) {
+        setContent(formatPublishedData(e.detail));
+      } else {
+        fetchPublishedContent();
+      }
+    };
+
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (e.key === 'asarr_published_website_content' && e.newValue && mounted) {
+        try {
+          setContent(formatPublishedData(JSON.parse(e.newValue)));
+        } catch (_) {}
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('asarr_website_content_published', handleLocalPublish);
+      window.addEventListener('storage', handleStorageEvent);
+    }
+
     return () => {
       mounted = false;
+      supabase.removeChannel(channel);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('asarr_website_content_published', handleLocalPublish);
+        window.removeEventListener('storage', handleStorageEvent);
+      }
     };
   }, []);
 

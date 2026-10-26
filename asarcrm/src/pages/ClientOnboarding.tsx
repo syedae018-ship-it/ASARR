@@ -311,23 +311,25 @@ export default function ClientOnboarding() {
 
       {/* Invitations Table */}
       <Card className="border-border/60 shadow-sm overflow-hidden bg-card">
-        <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
-          <div>
+        <CardHeader className="p-4 sm:p-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-0.5">
             <CardTitle className="text-base font-semibold">Authorized Client Invitations</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground">
               Strictly email-bound activation links that consume upon account creation
             </p>
           </div>
           <Button
             size="sm"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
+            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
             onClick={() => setIsInviteModalOpen(true)}
           >
             <UserPlus className="w-3.5 h-3.5 mr-1.5" />
             Invite Client
           </Button>
         </CardHeader>
-        <div className="overflow-x-auto">
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-muted/40 border-b border-border text-xs uppercase font-semibold text-muted-foreground">
               <tr>
@@ -467,6 +469,136 @@ export default function ClientOnboarding() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Zero-Swipe Stacked Cards View */}
+        <div className="block md:hidden divide-y divide-border">
+          {isLoading ? (
+            <div className="py-10 text-center text-muted-foreground animate-pulse text-xs">
+              Loading invitation ledger...
+            </div>
+          ) : invitations.length === 0 ? (
+            <div className="py-10 text-center text-muted-foreground p-4">
+              <UserPlus className="w-8 h-8 mx-auto mb-2 opacity-40 text-primary" />
+              <p className="font-semibold text-foreground text-sm">No client invitations issued</p>
+              <p className="text-xs mt-1 text-muted-foreground">
+                Generate a secure activation link for an approved client organization.
+              </p>
+              <Button
+                size="sm"
+                className="mt-4 w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
+                onClick={() => setIsInviteModalOpen(true)}
+              >
+                <UserPlus className="w-3.5 h-3.5 mr-1.5" />
+                Invite Client
+              </Button>
+            </div>
+          ) : (
+            invitations.map((inv) => (
+              <div key={inv.id} className="p-4 space-y-3 bg-card">
+                {/* Header: Organization & Status Badge */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-foreground text-sm leading-snug">
+                      {inv.client_name || "Client Entity"}
+                    </h3>
+                    <p className="text-xs font-mono text-muted-foreground mt-0.5 break-all">
+                      {inv.email}
+                    </p>
+                  </div>
+                  <Badge
+                    className={cn(
+                      "text-[10px] font-semibold border-0 shrink-0 capitalize",
+                      inv.status === "accepted" && "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
+                      inv.status === "pending" && "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
+                      inv.status === "revoked" && "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
+                      inv.status === "expired" && "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                    )}
+                  >
+                    {inv.status}
+                  </Badge>
+                </div>
+
+                {/* Dates Meta */}
+                <div className="p-2.5 rounded-lg bg-muted/40 text-xs space-y-1">
+                  <div className="flex justify-between text-muted-foreground text-[11px]">
+                    <span>Sent:</span>
+                    <span className="font-medium text-foreground">
+                      {inv.created_at ? format(parseISO(inv.created_at), "dd MMM yyyy, hh:mm a") : "—"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-muted-foreground text-[11px]">
+                    <span>Expires:</span>
+                    <span className="font-mono text-foreground">
+                      {inv.expires_at ? format(parseISO(inv.expires_at), "dd MMM yyyy, hh:mm a") : "24 hours"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Mobile Zero-Swipe Actions */}
+                <div className="pt-1">
+                  {inv.status !== "accepted" && inv.status !== "revoked" && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        className="flex-1 h-9 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold"
+                        onClick={() => copyActivationLink(inv.token, inv.id)}
+                      >
+                        {copiedId === inv.id ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 mr-1 text-emerald-300" />
+                            Link Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5 mr-1" />
+                            Copy Activation Link
+                          </>
+                        )}
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-9 px-3 text-xs border-primary/20 text-primary hover:bg-primary/5"
+                        onClick={() => regenerateInviteMutation.mutate(inv)}
+                        title="Resend invitation"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-9 px-3 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                        onClick={() => {
+                          if (confirm(`Revoke invitation for ${inv.email}?`)) {
+                            revokeInviteMutation.mutate(inv.id);
+                          }
+                        }}
+                        title="Revoke invitation"
+                      >
+                        Revoke
+                      </Button>
+                    </div>
+                  )}
+
+                  {inv.status === "accepted" && (
+                    <div className="flex items-center justify-center p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>Client Account Active in Portal</span>
+                    </div>
+                  )}
+
+                  {inv.status === "revoked" && (
+                    <div className="text-center text-xs text-muted-foreground p-1">
+                      Invitation Revoked
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </Card>
 

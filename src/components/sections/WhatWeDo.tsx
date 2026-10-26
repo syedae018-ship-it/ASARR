@@ -107,7 +107,7 @@ export function WhatWeDo() {
           <div className="flex items-center gap-3">
             <span className="w-1.5 h-1.5 rounded-full bg-[#6F1420]" />
             <span className="font-mono text-[11px] sm:text-[12px] uppercase tracking-[0.16em] text-[#6E665E] font-semibold">
-              WHAT WE DO
+              {whatWeDo.eyebrow || "WHAT WE DO"}
             </span>
           </div>
 
@@ -130,23 +130,31 @@ export function WhatWeDo() {
             <div className="flex items-center gap-2.5 mb-4">
               <span className="w-5 h-[2px] bg-[#6F1420]" />
               <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#8C847C] font-medium">
-                COMPLETE DIGITAL SOLUTIONS
+                {whatWeDo.eyebrow ? `${whatWeDo.eyebrow} • OVERVIEW` : "COMPLETE DIGITAL SOLUTIONS"}
               </span>
             </div>
 
             <h2 className="text-[2.6rem] sm:text-[3.4rem] lg:text-[3.8rem] leading-[1.02] tracking-[-0.02em] text-[#171515]">
-              <span className="block font-sans font-extrabold uppercase">A–Z</span>
-              <span className="block font-sans font-extrabold uppercase mt-0.5">Solutions for</span>
-              <span className="block font-serif italic font-normal text-[#6F1420] text-[2.8rem] sm:text-[3.6rem] lg:text-[4.1rem] mt-0.5">
-                Your Digital Presence.
-              </span>
+              {whatWeDo.title && whatWeDo.title !== "A-Z Solutions for Your Digital Presence." ? (
+                <span className="block font-sans font-extrabold uppercase">
+                  {whatWeDo.title}
+                </span>
+              ) : (
+                <>
+                  <span className="block font-sans font-extrabold uppercase">A–Z</span>
+                  <span className="block font-sans font-extrabold uppercase mt-0.5">Solutions for</span>
+                  <span className="block font-serif italic font-normal text-[#6F1420] text-[2.8rem] sm:text-[3.6rem] lg:text-[4.1rem] mt-0.5">
+                    Your Digital Presence.
+                  </span>
+                </>
+              )}
             </h2>
           </div>
 
           {/* Right: Description + CTA */}
           <div className="lg:col-span-6 flex flex-col sm:flex-row sm:items-end justify-between gap-6 lg:pb-2">
             <p className="font-sans text-[13px] sm:text-sm text-[#5C554E] max-w-md leading-[1.7]">
-              From custom websites and software to content creation and marketing — we handle the complete digital journey for your brand.
+              {whatWeDo.description || "From custom websites and software to content creation and marketing — we handle the complete digital journey for your brand."}
             </p>
 
             <button
