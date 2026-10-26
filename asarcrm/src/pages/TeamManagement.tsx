@@ -338,7 +338,8 @@ export default function TeamManagement() {
             Active Agency Administrators & Team
           </CardTitle>
         </CardHeader>
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-muted/50 border-b border-border text-xs uppercase font-semibold text-muted-foreground">
               <tr>
@@ -452,6 +453,106 @@ export default function TeamManagement() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Zero-Swipe Cards View */}
+        <div className="block md:hidden divide-y divide-border">
+          {members.map((member) => {
+            const isOwner = member.role === "owner";
+
+            return (
+              <div key={member.id} className="p-4 space-y-3 bg-card">
+                {/* Header: Name, Owner Badge, Role Badge, Status Badge */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-foreground text-sm">
+                        {member.full_name || "Agency Admin"}
+                      </span>
+                      {isOwner && (
+                        <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-400 border-0 text-[10px] py-0">
+                          OWNER
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="font-mono text-xs text-muted-foreground mt-0.5 break-all">
+                      {member.email}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Badge
+                      className={cn(
+                        "text-[10px] font-medium border-0 capitalize",
+                        member.role === "owner" && "bg-amber-100 text-amber-800",
+                        member.role === "admin" && "bg-primary/20 text-primary font-semibold",
+                        member.role === "team_member" && "bg-slate-100 text-slate-800"
+                      )}
+                    >
+                      {member.role?.replace("_", " ")}
+                    </Badge>
+                    <Badge
+                      className={cn(
+                        "text-[10px] font-medium border-0 capitalize",
+                        member.status === "active" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
+                      )}
+                    >
+                      {member.status}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Joined Date */}
+                <div className="text-xs text-muted-foreground">
+                  Joined: <span className="text-foreground">{member.created_at ? format(parseISO(member.created_at), "dd MMM yyyy") : "Foundation"}</span>
+                </div>
+
+                {/* Mobile Zero-Swipe Actions */}
+                <div className="flex flex-col gap-2 pt-1 border-t border-border/50">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full h-8 text-xs border-primary/20 hover:bg-primary/5"
+                    onClick={() => handleOpenTaskModal(member.user_id)}
+                  >
+                    <CheckSquare className="w-3.5 h-3.5 mr-1.5 text-primary" />
+                    Assign Task
+                  </Button>
+
+                  {!isOwner && (
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={member.role}
+                        onValueChange={(newRole) => changeRoleMutation.mutate({ id: member.id, newRole })}
+                      >
+                        <SelectTrigger className="h-8 text-xs flex-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="team_member">Team Member</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={cn(
+                          "h-8 text-xs flex-1",
+                          member.status === "active" ? "text-rose-600 hover:bg-rose-50" : "text-emerald-600 hover:bg-emerald-50"
+                        )}
+                        onClick={() => toggleStatusMutation.mutate({
+                          id: member.id,
+                          newStatus: member.status === "active" ? "inactive" : "active"
+                        })}
+                      >
+                        {member.status === "active" ? "Deactivate" : "Activate"}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </Card>
 
       {/* Pending Invitations Table */}
@@ -460,7 +561,9 @@ export default function TeamManagement() {
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base font-semibold">Pending Admin Invitations</CardTitle>
           </CardHeader>
-          <div className="overflow-x-auto">
+
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-muted/50 border-b border-border text-xs uppercase font-semibold text-muted-foreground">
                 <tr>
@@ -540,13 +643,83 @@ export default function TeamManagement() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Zero-Swipe Cards */}
+          <div className="block md:hidden divide-y divide-border">
+            {invitations.map((inv) => (
+              <div key={inv.id} className="p-4 space-y-2.5 bg-card">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-mono text-xs font-semibold text-foreground break-all">
+                      {inv.email}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground capitalize mt-0.5">
+                      Role: {inv.role?.replace("_", " ")}
+                    </p>
+                  </div>
+                  <Badge className="text-[10px] bg-amber-100 text-amber-800 border-0 shrink-0">
+                    {inv.status}
+                  </Badge>
+                </div>
+
+                <div className="text-[11px] font-mono text-muted-foreground">
+                  Expires: {inv.expires_at ? format(parseISO(inv.expires_at), "dd MMM yyyy, hh:mm a") : "24 hours"}
+                </div>
+
+                <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+                  {inv.status === "pending" && (
+                    <Button
+                      size="sm"
+                      className="flex-1 h-8 bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
+                      onClick={() => copyInvitationToken(inv.token, inv.id)}
+                    >
+                      {copiedId === inv.id ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 mr-1" />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 mr-1" />
+                          Copy Link
+                        </>
+                      )}
+                    </Button>
+                  )}
+
+                  {inv.status !== "accepted" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 px-3 text-xs border-primary/20 text-primary hover:bg-primary/5"
+                      onClick={() => regenerateAdminInviteMutation.mutate(inv)}
+                      title="Refresh invitation token"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
+
+                  {inv.status === "pending" && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 px-3 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                      onClick={() => revokeInviteMutation.mutate(inv.id)}
+                    >
+                      Revoke
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </Card>
       )}
 
       {/* Team Tasks & Assignments Section */}
       <Card className="border-border/60 shadow-sm overflow-hidden">
-        <CardHeader className="p-4 border-b border-border flex flex-row items-center justify-between">
-          <div>
+        <CardHeader className="p-4 sm:p-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-0.5">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <ListTodo className="w-4 h-4 text-primary" />
               Team Tasks & Deliverables
@@ -557,14 +730,16 @@ export default function TeamManagement() {
           </div>
           <Button
             size="sm"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
+            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground text-xs"
             onClick={() => handleOpenTaskModal()}
           >
             <Plus className="w-3.5 h-3.5 mr-1" />
             Assign Task
           </Button>
         </CardHeader>
-        <div className="overflow-x-auto">
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/50 text-[11px] uppercase tracking-wider text-muted-foreground font-medium border-b border-border">
               <tr>
@@ -659,11 +834,89 @@ export default function TeamManagement() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Zero-Swipe Cards View */}
+        <div className="block md:hidden divide-y divide-border">
+          {teamTasks.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground p-4">
+              <CheckSquare className="w-7 h-7 mx-auto mb-2 opacity-30 text-primary" />
+              <p className="font-medium text-foreground text-xs">No team tasks assigned yet</p>
+              <p className="text-[11px] mt-0.5">Click "Assign Task" above to delegate a task.</p>
+            </div>
+          ) : (
+            teamTasks.map((t: any) => {
+              const assignedMember = members.find(m => m.user_id === t.assigned_to);
+              const isDone = t.status === "done";
+
+              return (
+                <div key={t.id} className="p-4 space-y-2.5 bg-card">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className={cn("font-medium text-foreground text-xs", isDone && "line-through text-muted-foreground")}>
+                        {t.title}
+                      </div>
+                      {t.description && (
+                        <div className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                          {t.description}
+                        </div>
+                      )}
+                    </div>
+                    <Badge
+                      className={cn(
+                        "text-[10px] font-medium border-0 capitalize shrink-0",
+                        isDone ? "bg-emerald-100 text-emerald-800" : "bg-primary/10 text-primary"
+                      )}
+                    >
+                      {isDone ? "Completed" : "In Progress"}
+                    </Badge>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground pt-1">
+                    <span className="flex items-center gap-1 font-medium text-foreground">
+                      <Users className="w-3 h-3 text-muted-foreground" />
+                      {assignedMember?.full_name || t.assigned_name || assignedMember?.email || "Team Member"}
+                    </span>
+                    <span>•</span>
+                    <Badge
+                      className={cn(
+                        "text-[9px] font-medium border-0 capitalize py-0",
+                        t.priority === "urgent" && "bg-rose-100 text-rose-800",
+                        t.priority === "high" && "bg-amber-100 text-amber-800",
+                        t.priority === "medium" && "bg-primary/10 text-primary",
+                        t.priority === "low" && "bg-slate-100 text-slate-800"
+                      )}
+                    >
+                      {t.priority || "medium"}
+                    </Badge>
+                    <span>•</span>
+                    <span className="font-mono">
+                      {t.due_date ? format(parseISO(t.due_date), "dd MMM yyyy") : "No deadline"}
+                    </span>
+                  </div>
+
+                  <div className="pt-2 border-t border-border/50">
+                    <Button
+                      size="sm"
+                      variant={isDone ? "outline" : "default"}
+                      className={cn(
+                        "w-full h-8 text-xs font-semibold",
+                        isDone ? "text-muted-foreground" : "bg-primary text-primary-foreground hover:bg-primary/90"
+                      )}
+                      onClick={() => toggleTaskStatus(t.id, t.status)}
+                    >
+                      {isDone ? "Reopen Task" : "Mark as Done"}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
       </Card>
 
       {/* Invite Modal */}
       <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <UserPlus className="w-5 h-5 text-primary" />
@@ -716,7 +969,7 @@ export default function TeamManagement() {
 
       {/* Assign Task Modal */}
       <Dialog open={isTaskModalOpen} onOpenChange={setIsTaskModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CheckSquare className="w-5 h-5 text-primary" />

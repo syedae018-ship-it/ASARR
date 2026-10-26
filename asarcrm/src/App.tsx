@@ -185,6 +185,7 @@ function AppRoutes() {
       <Route path="/contact/:userId" element={<LeadForm />} />
       <Route path="/forms/:formId" element={<PublicForm />} />
       <Route path="/activate/:token" element={<ClientActivation />} />
+      <Route path="/portal/activate/:token" element={<ClientActivation />} />
       <Route path="/invoices/:id/print" element={<InvoicePrint />} />
       <Route path="/telecalling" element={
         <ProtectedAdminRoute>
