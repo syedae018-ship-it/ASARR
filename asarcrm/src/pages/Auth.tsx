@@ -21,9 +21,6 @@ import {
   CheckCircle2,
   KeyRound,
   Loader2,
-  Sparkles,
-  ShieldCheck,
-  Building2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -46,7 +43,7 @@ export default function Auth() {
   const [isActivateModalOpen, setIsActivateModalOpen] = useState(false);
   const [activationInput, setActivationInput] = useState("");
 
-  const { signIn, resetPassword, loginAsDemoAdmin, loginAsDemoClient } = useAuth();
+  const { signIn, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   // If page was loaded with an invite token, forward straight to the activation page
@@ -146,103 +143,6 @@ export default function Auth() {
             <p className="text-xs font-medium text-muted-foreground mt-1 max-w-xs">
               Unified Agency Operating System & Client Collaboration Workspace
             </p>
-          </div>
-
-          {/* ONE-CLICK PRESENTATION DEMO CARDS - MAROON & BEIGE MONOCHROME */}
-          <div className="mb-6 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1.5 bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20">
-                <Sparkles className="w-3 h-3 text-primary" />
-                Instant Demo Access
-              </span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Executive Admin Demo Card */}
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => {
-                  loginAsDemoAdmin();
-                  toast.success("Welcome, ASARR Executive Admin");
-                  navigate("/");
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    loginAsDemoAdmin();
-                    navigate("/");
-                  }
-                }}
-                className="group relative p-3.5 rounded-xl border border-primary/20 hover:border-primary bg-gradient-to-br from-primary/5 via-card to-secondary/30 hover:shadow-md hover:shadow-primary/10 transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-                    Admin
-                  </span>
-                </div>
-                <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                  Agency Workspace
-                </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
-                  Projects, clients, finance, telecalling & team
-                </p>
-                <div className="mt-2.5 flex items-center gap-1 text-[11px] font-semibold text-primary">
-                  <span>Enter Admin</span>
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-                </div>
-              </div>
-
-              {/* Client Portal Demo Card */}
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => {
-                  loginAsDemoClient();
-                  toast.success("Welcome, Client Partner");
-                  navigate("/portal");
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    loginAsDemoClient();
-                    navigate("/portal");
-                  }
-                }}
-                className="group relative p-3.5 rounded-xl border border-primary/20 hover:border-primary bg-gradient-to-br from-primary/5 via-card to-secondary/30 hover:shadow-md hover:shadow-primary/10 transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
-                    <Building2 className="w-4 h-4" />
-                  </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-                    Client
-                  </span>
-                </div>
-                <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                  Client Portal
-                </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
-                  Deliverables, milestones, approvals & billing
-                </p>
-                <div className="mt-2.5 flex items-center gap-1 text-[11px] font-semibold text-primary">
-                  <span>Enter Portal</span>
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Form Header Divider */}
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">
-              Or Sign In with Credentials
-            </span>
-            <div className="h-px flex-1 bg-border" />
           </div>
 
           {/* Clean Email & Password Form */}

@@ -82,35 +82,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {isDemo && (
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                  Demo Mode
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={resetDemo}
-                  className="h-8 text-xs hidden sm:inline-flex"
-                >
-                  Reset Sample Data
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    switchRole("client");
-                    navigate("/portal");
-                  }}
-                  className="h-8 text-xs border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950 hidden sm:inline-flex gap-1"
-                >
-                  <ArrowRightLeft className="w-3.5 h-3.5" />
-                  Client Portal
-                </Button>
-              </div>
-            )}
             <NotificationBell />
           </div>
         </header>

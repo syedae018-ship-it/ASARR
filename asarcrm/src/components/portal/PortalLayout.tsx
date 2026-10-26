@@ -51,20 +51,6 @@ export function PortalLayout({ children }: PortalLayoutProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            {isDemo && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  switchRole("owner");
-                  navigate("/");
-                }}
-                className="h-8 text-xs border-primary/40 text-primary hover:bg-primary/10 gap-1.5 font-medium"
-              >
-                <ArrowRightLeft className="w-3.5 h-3.5" />
-                Switch to Admin Workspace
-              </Button>
-            )}
             <NotificationBell />
           </div>
         </header>
