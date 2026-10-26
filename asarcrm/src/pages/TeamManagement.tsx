@@ -246,16 +246,58 @@ export default function TeamManagement() {
     }
   });
 
-  // Revoke Invitation Mutation
-  const revokeInviteMutation = useMutation({
+  // Delete / Revoke Single Invitation Mutation
+  const deleteInviteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await updateDoc(doc(db, "admin_invitations", id), {
-        status: "revoked"
-      });
+      const { error } = await supabase.from("admin_invitations").delete().eq("id", id);
+      if (error) {
+        await deleteDoc(doc(db, "admin_invitations", id));
+        await updateDoc(doc(db, "admin_invitations", id), { status: "revoked" });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin_invitations"] });
-      toast.info("Invitation revoked.");
+      toast.success("Invitation deleted permanently.");
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Failed to delete invitation");
+    }
+  });
+
+  // Delete All Pending Admin Invitations
+  const deleteAllInvitesMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("admin_invitations").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      if (error) {
+        const snap = await getDocs(collection(db, "admin_invitations"));
+        for (const d of snap.docs) {
+          await deleteDoc(doc(db, "admin_invitations", d.id));
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin_invitations"] });
+      toast.success("All previous invitations deleted successfully.");
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Failed to delete invitations");
+    }
+  });
+
+  // Remove Member Mutation (Non-Owners only)
+  const removeMemberMutation = useMutation({
+    mutationFn: async (memberId: string) => {
+      const { error } = await supabase.from("admin_memberships").delete().eq("id", memberId);
+      if (error) {
+        await deleteDoc(doc(db, "admin_memberships", memberId));
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin_memberships"] });
+      toast.success("Team member removed successfully.");
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Failed to remove member");
     }
   });
 
@@ -443,6 +485,20 @@ export default function TeamManagement() {
                             >
                               {member.status === "active" ? "Deactivate" : "Activate"}
                             </Button>
+
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 text-xs text-rose-600 hover:bg-rose-50 px-2"
+                              title="Permanently remove team member"
+                              onClick={() => {
+                                if (window.confirm(`Permanently remove ${member.full_name || member.email} from agency admins?`)) {
+                                  removeMemberMutation.mutate(member.id);
+                                }
+                              }}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
                           </>
                         )}
                       </div>
@@ -546,6 +602,20 @@ export default function TeamManagement() {
                       >
                         {member.status === "active" ? "Deactivate" : "Activate"}
                       </Button>
+
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 text-xs text-rose-600 hover:bg-rose-50 px-2 shrink-0"
+                        title="Permanently remove member"
+                        onClick={() => {
+                          if (window.confirm(`Permanently remove ${member.full_name || member.email} from agency admins?`)) {
+                            removeMemberMutation.mutate(member.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -558,8 +628,25 @@ export default function TeamManagement() {
       {/* Pending Invitations Table */}
       {invitations.length > 0 && (
         <Card className="border-border/60 shadow-sm overflow-hidden">
-          <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-base font-semibold">Pending Admin Invitations</CardTitle>
+          <CardHeader className="p-4 sm:p-5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-base font-semibold">Pending Admin Invitations</CardTitle>
+              <CardDescription className="text-xs">Active onboarding invitation links awaiting activation.</CardDescription>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/30 self-start sm:self-auto"
+              onClick={() => {
+                if (window.confirm("Permanently delete all previous pending admin invitations?")) {
+                  deleteAllInvitesMutation.mutate();
+                }
+              }}
+              disabled={deleteAllInvitesMutation.isPending}
+            >
+              <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+              Delete All Invites
+            </Button>
           </CardHeader>
 
           {/* Desktop Table */}
@@ -626,16 +713,16 @@ export default function TeamManagement() {
                           </Button>
                         )}
 
-                        {inv.status === "pending" && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                            onClick={() => revokeInviteMutation.mutate(inv.id)}
-                          >
-                            Revoke
-                          </Button>
-                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                          onClick={() => deleteInviteMutation.mutate(inv.id)}
+                          disabled={deleteInviteMutation.isPending}
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Delete
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -699,16 +786,16 @@ export default function TeamManagement() {
                     </Button>
                   )}
 
-                  {inv.status === "pending" && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 px-3 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                      onClick={() => revokeInviteMutation.mutate(inv.id)}
-                    >
-                      Revoke
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 px-3 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                    onClick={() => deleteInviteMutation.mutate(inv.id)}
+                    disabled={deleteInviteMutation.isPending}
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-1" />
+                    Delete
+                  </Button>
                 </div>
               </div>
             ))}
