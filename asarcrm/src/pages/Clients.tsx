@@ -29,10 +29,10 @@ interface Client {
 }
 
 const statusConfig = {
-  need_follow_up: { label: "Need Follow Up", color: "bg-yellow-500/10 text-yellow-600 border-yellow-200" },
+  need_follow_up: { label: "Need Follow Up", color: "bg-amber-500/10 text-amber-600 border-amber-200" },
   waiting_payment: { label: "Waiting Payment", color: "bg-orange-500/10 text-orange-600 border-orange-200" },
-  in_progress: { label: "In Progress", color: "bg-blue-500/10 text-blue-600 border-blue-200" },
-  completed: { label: "Completed", color: "bg-green-500/10 text-green-600 border-green-200" },
+  in_progress: { label: "In Progress", color: "bg-primary/10 text-primary border-primary/20" },
+  completed: { label: "Completed", color: "bg-emerald-500/10 text-emerald-600 border-emerald-200" },
 };
 
 export default function Clients() {

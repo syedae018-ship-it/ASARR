@@ -64,9 +64,9 @@ export default function PortalApprovals() {
       case "video":
         return <Video className="w-4 h-4 text-rose-500" />;
       case "software":
-        return <FileCode2 className="w-4 h-4 text-blue-500" />;
+        return <FileCode2 className="w-4 h-4 text-primary" />;
       default:
-        return <Palette className="w-4 h-4 text-indigo-500" />;
+        return <Palette className="w-4 h-4 text-primary/80" />;
     }
   };
 

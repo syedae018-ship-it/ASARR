@@ -89,9 +89,14 @@ export function Sidebar({ profile, mobileOpen = false, onMobileClose }: SidebarP
           )}
 
           {!collapsed && (
-            <span className="font-semibold text-sidebar-foreground text-lg truncate max-w-[170px]">
-              {profile?.company_name || "ASARR Digital Agency"}
-            </span>
+            <div className="flex flex-col">
+              <span className="font-bold text-sidebar-foreground text-base tracking-tight">
+                ASARR OS
+              </span>
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-primary/90">
+                Agency Operating System
+              </span>
+            </div>
           )}
         </div>
       </div>

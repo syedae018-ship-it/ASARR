@@ -616,7 +616,7 @@ export default function TeamManagement() {
                             "text-[10px] font-medium border-0 capitalize",
                             t.priority === "urgent" && "bg-rose-100 text-rose-800",
                             t.priority === "high" && "bg-amber-100 text-amber-800",
-                            t.priority === "medium" && "bg-blue-100 text-blue-800",
+                            t.priority === "medium" && "bg-primary/10 text-primary border border-primary/20",
                             t.priority === "low" && "bg-slate-100 text-slate-800"
                           )}
                         >

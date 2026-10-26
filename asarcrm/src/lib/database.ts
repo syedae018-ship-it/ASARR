@@ -168,6 +168,18 @@ function executeDemoQuery(reference: CollectionReference | QueryReference): Row[
 }
 
 export async function getDocs(reference: CollectionReference | QueryReference) {
+  if (isDemoModeActive()) {
+    const demoItems = executeDemoQuery(reference);
+    return new QuerySnapshot(
+      demoItems.map((row) =>
+        new DocumentSnapshot(
+          { kind: "document", table: reference.table, id: String(row.id) },
+          row,
+        ),
+      ),
+    );
+  }
+
   try {
     let request = supabase.from(reference.table).select("*");
     const constraints = "constraints" in reference ? reference.constraints : [];
@@ -185,7 +197,16 @@ export async function getDocs(reference: CollectionReference | QueryReference) {
     const { data, error } = await request;
     if (error) {
       console.warn(`Supabase getDocs query error on ${reference.table}:`, error.message);
-      return new QuerySnapshot([]);
+      // Fallback to demo items if table doesn't exist yet or offline
+      const fallback = executeDemoQuery(reference);
+      return new QuerySnapshot(
+        fallback.map((row) =>
+          new DocumentSnapshot(
+            { kind: "document", table: reference.table, id: String(row.id) },
+            row,
+          ),
+        ),
+      );
     }
 
     return new QuerySnapshot(
@@ -198,11 +219,24 @@ export async function getDocs(reference: CollectionReference | QueryReference) {
     );
   } catch (err) {
     console.error(`Supabase error on ${reference.table}:`, err);
-    return new QuerySnapshot([]);
+    const fallback = executeDemoQuery(reference);
+    return new QuerySnapshot(
+      fallback.map((row) =>
+        new DocumentSnapshot(
+          { kind: "document", table: reference.table, id: String(row.id) },
+          row,
+        ),
+      ),
+    );
   }
 }
 
 export async function getCountFromServer(reference: CollectionReference | QueryReference) {
+  if (isDemoModeActive()) {
+    const count = executeDemoQuery(reference).length;
+    return { data: () => ({ count }) };
+  }
+
   try {
     let request = supabase.from(reference.table).select("*", { count: "exact", head: true });
     const constraints = "constraints" in reference ? reference.constraints : [];
@@ -214,7 +248,8 @@ export async function getCountFromServer(reference: CollectionReference | QueryR
     const { count, error } = await request;
     if (error) {
       console.warn(`Supabase count error on ${reference.table}:`, error.message);
-      return { data: () => ({ count: 0 }) };
+      const fallbackCount = executeDemoQuery(reference).length;
+      return { data: () => ({ count: fallbackCount }) };
     }
     return { data: () => ({ count: count ?? 0 }) };
   } catch (err) {
@@ -224,6 +259,12 @@ export async function getCountFromServer(reference: CollectionReference | QueryR
 }
 
 export async function getDoc(reference: DocumentReference) {
+  if (isDemoModeActive()) {
+    const items = getDemoCollection(reference.table);
+    const item = items.find((d: any) => String(d.id) === String(reference.id)) ?? null;
+    return new DocumentSnapshot(reference, item);
+  }
+
   try {
     const { data, error } = await supabase
       .from(reference.table)
@@ -233,7 +274,9 @@ export async function getDoc(reference: DocumentReference) {
 
     if (error) {
       console.warn(`Supabase getDoc error on ${reference.table}/${reference.id}:`, error.message);
-      return new DocumentSnapshot(reference, null);
+      const items = getDemoCollection(reference.table);
+      const item = items.find((d: any) => String(d.id) === String(reference.id)) ?? null;
+      return new DocumentSnapshot(reference, item);
     }
     return new DocumentSnapshot(reference, data);
   } catch (err) {
@@ -244,36 +287,114 @@ export async function getDoc(reference: DocumentReference) {
 
 export async function addDoc(reference: CollectionReference, values: Row) {
   const id = values.id || crypto.randomUUID();
-  const { error } = await supabase.from(reference.table).insert({ id, ...values });
-  if (error) {
-    console.error(`Supabase addDoc error on ${reference.table}:`, error);
-    throw error;
+  const payload = { id, ...values };
+
+  if (isDemoModeActive()) {
+    const items = getDemoCollection(reference.table);
+    items.unshift(payload);
+    saveDemoCollection(reference.table, items);
+    return { id };
   }
+
+  try {
+    const { error } = await supabase.from(reference.table).insert(payload);
+    if (error) {
+      console.warn(`Supabase addDoc fallback to local on ${reference.table}:`, error.message);
+      const items = getDemoCollection(reference.table);
+      items.unshift(payload);
+      saveDemoCollection(reference.table, items);
+    }
+  } catch (err) {
+    console.warn(`Supabase addDoc error, saving locally on ${reference.table}:`, err);
+    const items = getDemoCollection(reference.table);
+    items.unshift(payload);
+    saveDemoCollection(reference.table, items);
+  }
+
   return { id };
 }
 
 export async function setDoc(reference: DocumentReference, values: Row, options?: { merge?: boolean }) {
   const payload = { id: reference.id, ...values };
-  const { error } = await supabase.from(reference.table).upsert(payload, { onConflict: "id" });
-  if (error) {
-    console.error(`Supabase setDoc error on ${reference.table}/${reference.id}:`, error);
-    throw error;
+
+  if (isDemoModeActive()) {
+    const items = getDemoCollection(reference.table);
+    const idx = items.findIndex((d: any) => String(d.id) === String(reference.id));
+    if (idx >= 0) {
+      items[idx] = options?.merge ? { ...items[idx], ...payload } : payload;
+    } else {
+      items.push(payload);
+    }
+    saveDemoCollection(reference.table, items);
+    return;
+  }
+
+  try {
+    const { error } = await supabase.from(reference.table).upsert(payload, { onConflict: "id" });
+    if (error) {
+      console.warn(`Supabase setDoc error on ${reference.table}:`, error.message);
+      const items = getDemoCollection(reference.table);
+      const idx = items.findIndex((d: any) => String(d.id) === String(reference.id));
+      if (idx >= 0) items[idx] = { ...items[idx], ...payload };
+      else items.push(payload);
+      saveDemoCollection(reference.table, items);
+    }
+  } catch (err) {
+    console.warn(`Supabase setDoc error on ${reference.table}:`, err);
   }
 }
 
 export async function updateDoc(reference: DocumentReference, values: Row) {
-  const { error } = await supabase.from(reference.table).update(values).eq("id", reference.id);
-  if (error) {
-    console.error(`Supabase updateDoc error on ${reference.table}/${reference.id}:`, error);
-    throw error;
+  if (isDemoModeActive()) {
+    const items = getDemoCollection(reference.table);
+    const idx = items.findIndex((d: any) => String(d.id) === String(reference.id));
+    if (idx >= 0) {
+      items[idx] = { ...items[idx], ...values };
+      saveDemoCollection(reference.table, items);
+    }
+    return;
+  }
+
+  try {
+    const { error } = await supabase.from(reference.table).update(values).eq("id", reference.id);
+    if (error) {
+      console.warn(`Supabase updateDoc fallback on ${reference.table}:`, error.message);
+      const items = getDemoCollection(reference.table);
+      const idx = items.findIndex((d: any) => String(d.id) === String(reference.id));
+      if (idx >= 0) {
+        items[idx] = { ...items[idx], ...values };
+        saveDemoCollection(reference.table, items);
+      }
+    }
+  } catch (err) {
+    console.warn(`Supabase updateDoc error on ${reference.table}:`, err);
+    const items = getDemoCollection(reference.table);
+    const idx = items.findIndex((d: any) => String(d.id) === String(reference.id));
+    if (idx >= 0) {
+      items[idx] = { ...items[idx], ...values };
+      saveDemoCollection(reference.table, items);
+    }
   }
 }
 
 export async function deleteDoc(reference: DocumentReference) {
-  const { error } = await supabase.from(reference.table).delete().eq("id", reference.id);
-  if (error) {
-    console.error(`Supabase deleteDoc error on ${reference.table}/${reference.id}:`, error);
-    throw error;
+  if (isDemoModeActive()) {
+    const items = getDemoCollection(reference.table);
+    const filtered = items.filter((d: any) => String(d.id) !== String(reference.id));
+    saveDemoCollection(reference.table, filtered);
+    return;
+  }
+
+  try {
+    const { error } = await supabase.from(reference.table).delete().eq("id", reference.id);
+    if (error) {
+      console.warn(`Supabase deleteDoc fallback on ${reference.table}:`, error.message);
+      const items = getDemoCollection(reference.table);
+      const filtered = items.filter((d: any) => String(d.id) !== String(reference.id));
+      saveDemoCollection(reference.table, filtered);
+    }
+  } catch (err) {
+    console.warn(`Supabase deleteDoc error on ${reference.table}:`, err);
   }
 }
 

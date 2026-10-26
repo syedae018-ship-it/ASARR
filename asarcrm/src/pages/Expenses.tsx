@@ -64,25 +64,25 @@ import {
 } from "@/types";
 
 const CATEGORY_LABELS: Record<ExpenseCategory, { label: string; color: string }> = {
-  software_subscription: { label: "Software & SaaS", color: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
+  software_subscription: { label: "Software & SaaS", color: "bg-primary/10 text-primary border-primary/20" },
   travel_transit: { label: "Travel & Transit", color: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
   office_supplies: { label: "Office Supplies", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
-  meals_entertainment: { label: "Meals & Hosting", color: "bg-purple-500/10 text-purple-600 border-purple-500/20" },
-  contractor_freelance: { label: "Contractor / Freelance", color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20" },
+  meals_entertainment: { label: "Meals & Hosting", color: "bg-primary/15 text-primary border-primary/30" },
+  contractor_freelance: { label: "Contractor / Freelance", color: "bg-secondary text-secondary-foreground border-border" },
   hardware_equipment: { label: "Hardware & Gear", color: "bg-orange-500/10 text-orange-600 border-orange-500/20" },
   advertising_marketing: { label: "Ads & Marketing", color: "bg-rose-500/10 text-rose-600 border-rose-500/20" },
-  telecom_internet: { label: "Telecom & Internet", color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20" },
-  utilities: { label: "Utilities", color: "bg-teal-500/10 text-teal-600 border-teal-500/20" },
+  telecom_internet: { label: "Telecom & Internet", color: "bg-primary/10 text-primary border-primary/20" },
+  utilities: { label: "Utilities", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
   other: { label: "Other Business", color: "bg-zinc-500/10 text-zinc-600 border-zinc-500/20" },
 };
 
 const STATUS_CONFIG: Record<ReimbursementStatus, { label: string; badge: string; icon: any }> = {
   draft: { label: "Draft", badge: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300", icon: Clock },
-  submitted: { label: "Submitted", badge: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300", icon: AlertCircle },
+  submitted: { label: "Submitted", badge: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/40", icon: AlertCircle },
   under_review: { label: "Under Review", badge: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300", icon: Clock },
   approved: { label: "Approved", badge: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300", icon: CheckCircle2 },
   rejected: { label: "Rejected", badge: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300", icon: X },
-  reimbursed: { label: "Reimbursed", badge: "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300", icon: Banknote },
+  reimbursed: { label: "Reimbursed", badge: "bg-primary/10 text-primary border border-primary/20", icon: Banknote },
 };
 
 export default function Expenses() {
@@ -532,9 +532,10 @@ export default function Expenses() {
         </CardContent>
       </Card>
 
-      {/* Expense Listing Table */}
+      {/* Expense Listing Table / Responsive Cards */}
       <Card className="border-border/80 bg-card overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border/80 bg-muted/40 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
@@ -691,6 +692,125 @@ export default function Expenses() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Zero-Swipe Cards View */}
+        <div className="block md:hidden divide-y divide-border/60">
+          {filteredExpenses.length === 0 ? (
+            <div className="px-4 py-12 text-center text-muted-foreground">
+              <Receipt className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="font-medium text-sm">No expense records found</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Click "Add Expense" to record business expenditures.
+              </p>
+            </div>
+          ) : (
+            filteredExpenses.map((expense) => {
+              const statusConf = STATUS_CONFIG[expense.reimbursement_status] || STATUS_CONFIG.draft;
+              const catConf = CATEGORY_LABELS[expense.category] || CATEGORY_LABELS.other;
+              const isOwnerOfExpense = expense.paid_by === user?.id || expense.created_by === user?.id;
+
+              return (
+                <div key={expense.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs text-primary font-semibold">
+                          {expense.voucher_number || "EXP-PENDING"}
+                        </span>
+                        <span className={cn("text-[10px] px-2 py-0.5 rounded-full border font-medium", catConf.color)}>
+                          {catConf.label}
+                        </span>
+                      </div>
+                      <h4 className="font-semibold text-sm text-foreground">{expense.title}</h4>
+                      <p className="text-xs text-muted-foreground">{expense.vendor}</p>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="font-bold text-base text-foreground">
+                        ₹{Number(expense.amount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      </div>
+                      <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1 mt-1", statusConf.badge)}>
+                        <statusConf.icon className="w-3 h-3" />
+                        {statusConf.label}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/40">
+                    <span>Date: {format(parseISO(expense.expense_date), "dd MMM yyyy")}</span>
+                    {expense.receipt_url && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs text-primary hover:bg-primary/10"
+                        onClick={() => window.open(expense.receipt_url!, "_blank")}
+                      >
+                        <FileText className="w-3 h-3 mr-1" />
+                        Receipt
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs flex-1 border-border"
+                      onClick={() => navigate(`/expenses/${expense.id}/print`)}
+                    >
+                      <Printer className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
+                      Voucher
+                    </Button>
+
+                    {expense.reimbursement_status === "draft" && isOwnerOfExpense && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="h-8 text-xs flex-1"
+                        onClick={() =>
+                          updateStatusMutation.mutate({
+                            expenseId: expense.id,
+                            status: "submitted",
+                          })
+                        }
+                      >
+                        Submit
+                      </Button>
+                    )}
+
+                    {isAdminOrOwner && (
+                      <Button
+                        size="sm"
+                        className="h-8 text-xs flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                        onClick={() => {
+                          setSelectedExpenseForReview(expense);
+                          setIsReviewModalOpen(true);
+                        }}
+                      >
+                        Review
+                      </Button>
+                    )}
+
+                    {expense.reimbursement_status === "draft" && (isOwnerOfExpense || isAdminOrOwner) && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 px-2.5 text-xs text-rose-600 hover:bg-rose-50"
+                        onClick={() => {
+                          if (confirm(`Delete draft expense "${expense.title}"?`)) {
+                            deleteExpenseMutation.mutate(expense.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </Card>
 

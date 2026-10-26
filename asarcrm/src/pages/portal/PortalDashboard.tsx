@@ -123,7 +123,7 @@ export default function PortalDashboard() {
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Pending Quotes
             </CardTitle>
-            <FileCheck2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <FileCheck2 className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingQuotes.length}</div>

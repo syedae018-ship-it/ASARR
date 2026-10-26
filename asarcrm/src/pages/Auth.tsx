@@ -22,6 +22,8 @@ import {
   KeyRound,
   Loader2,
   Sparkles,
+  ShieldCheck,
+  Building2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -133,27 +135,114 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="rounded-2xl p-8 border border-border/80 shadow-2xl bg-card">
-          {/* Brand Header */}
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-md">
+      <div className="w-full max-w-lg">
+        <div className="rounded-2xl p-6 sm:p-8 border border-border/80 shadow-2xl bg-card">
+          {/* Brand Header - ASARR OS */}
+          <div className="flex flex-col items-center text-center mb-6">
+            <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 mb-3 border border-primary/20">
               <Zap className="w-7 h-7 text-primary-foreground fill-primary-foreground/20" />
             </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-foreground text-2xl tracking-tight leading-none">ASARR</span>
-              <span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-widest mt-1">
-                AgencyOS Security
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">ASARR OS</h1>
+            <p className="text-xs font-medium text-muted-foreground mt-1 max-w-xs">
+              Unified Agency Operating System & Client Collaboration Workspace
+            </p>
+          </div>
+
+          {/* ONE-CLICK PRESENTATION DEMO CARDS - MAROON & BEIGE MONOCHROME */}
+          <div className="mb-6 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1.5 bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20">
+                <Sparkles className="w-3 h-3 text-primary" />
+                Instant Demo Access
               </span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Executive Admin Demo Card */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  loginAsDemoAdmin();
+                  toast.success("Welcome, ASARR Executive Admin");
+                  navigate("/");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    loginAsDemoAdmin();
+                    navigate("/");
+                  }
+                }}
+                className="group relative p-3.5 rounded-xl border border-primary/20 hover:border-primary bg-gradient-to-br from-primary/5 via-card to-secondary/30 hover:shadow-md hover:shadow-primary/10 transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                    Admin
+                  </span>
+                </div>
+                <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                  Agency Workspace
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
+                  Projects, clients, finance, telecalling & team
+                </p>
+                <div className="mt-2.5 flex items-center gap-1 text-[11px] font-semibold text-primary">
+                  <span>Enter Admin</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                </div>
+              </div>
+
+              {/* Client Portal Demo Card */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  loginAsDemoClient();
+                  toast.success("Welcome, Client Partner");
+                  navigate("/portal");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    loginAsDemoClient();
+                    navigate("/portal");
+                  }
+                }}
+                className="group relative p-3.5 rounded-xl border border-primary/20 hover:border-primary bg-gradient-to-br from-primary/5 via-card to-secondary/30 hover:shadow-md hover:shadow-primary/10 transition-all cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                    Client
+                  </span>
+                </div>
+                <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                  Client Portal
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-2">
+                  Deliverables, milestones, approvals & billing
+                </p>
+                <div className="mt-2.5 flex items-center gap-1 text-[11px] font-semibold text-primary">
+                  <span>Enter Portal</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Form Header */}
-          <div className="text-center mb-6">
-            <h1 className="text-xl font-semibold text-foreground">Sign In to Workspace</h1>
-            <p className="text-xs text-muted-foreground mt-1">
-              Enter your email and password to access your authorized workspace or portal
-            </p>
+          {/* Form Header Divider */}
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">
+              Or Sign In with Credentials
+            </span>
+            <div className="h-px flex-1 bg-border" />
           </div>
 
           {/* Clean Email & Password Form */}
@@ -170,7 +259,7 @@ export default function Auth() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  className="pl-9 text-xs bg-muted/20"
+                  className="pl-9 text-xs bg-muted/20 focus-visible:ring-primary"
                 />
               </div>
             </div>
@@ -200,14 +289,14 @@ export default function Auth() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
-                  className="pl-9 text-xs bg-muted/20"
+                  className="pl-9 text-xs bg-muted/20 focus-visible:ring-primary"
                 />
               </div>
             </div>
 
             <Button
               type="submit"
-              className="w-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 mt-2"
+              className="w-full text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 mt-2 shadow-md shadow-primary/15"
               disabled={loading}
             >
               {loading ? (
@@ -216,7 +305,7 @@ export default function Auth() {
                   Authenticating...
                 </>
               ) : (
-                "Sign In"
+                "Sign In to Workspace"
               )}
             </Button>
           </form>
@@ -234,34 +323,6 @@ export default function Auth() {
                 <ArrowRight className="w-3 h-3" />
               </button>
             </p>
-          </div>
-
-          {/* Development / Preview Shortcuts */}
-          <div className="pt-4 mt-4 border-t border-border/40 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>Development Preview:</span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  loginAsDemoClient();
-                  navigate("/portal");
-                }}
-                className="text-primary hover:underline font-semibold"
-              >
-                Demo Client
-              </button>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={() => {
-                  loginAsDemoAdmin();
-                  navigate("/");
-                }}
-                className="text-primary hover:underline font-semibold"
-              >
-                Demo Admin
-              </button>
-            </div>
           </div>
         </div>
 

@@ -76,7 +76,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </Button>
             <div>
               <p className="text-sm font-semibold text-foreground">
-                {profile?.company_name || "ASARR Agency"}
+                ASARR OS
               </p>
               <p className="hidden text-xs text-muted-foreground sm:block">Private workspace</p>
             </div>

@@ -502,15 +502,17 @@ const CURRENT_PORTAL_VIEW_KEY = "asarr_portal_view"; // 'admin' | 'client'
 const DEMO_MODE_STORAGE_KEY = "asarr_demo_mode";
 
 export function isDemoModeActive(): boolean {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem(DEMO_MODE_STORAGE_KEY);
-  }
-  return false;
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(DEMO_MODE_STORAGE_KEY) === "true";
 }
 
 export function setDemoModeActive(active: boolean) {
   if (typeof window !== "undefined") {
-    localStorage.setItem(DEMO_MODE_STORAGE_KEY, active ? "true" : "false");
+    if (active) {
+      localStorage.setItem(DEMO_MODE_STORAGE_KEY, "true");
+    } else {
+      localStorage.removeItem(DEMO_MODE_STORAGE_KEY);
+    }
   }
 }
 

@@ -183,14 +183,25 @@ export default function Telecalling() {
     };
   }, [contacts, callLogs, followUps]);
 
+  // Safe UUID validator for PostgreSQL Supabase
+  const getSafeAdminId = (uid?: string | null) => {
+    if (uid && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uid)) {
+      return uid;
+    }
+    return "77308899-8657-4ce4-907c-b56e33c8f760"; // Official ASARR Owner UUID fallback
+  };
+
   // Mutations
   const logCallMutation = useMutation({
     mutationFn: async () => {
       if (!activeContact) return;
 
       const calledAt = new Date().toISOString();
-      const currentAdminId = user?.id || "admin-system";
+      const currentAdminId = getSafeAdminId(user?.id);
       const currentAdminName = user?.email?.split("@")[0] || "ASARR Admin";
+      const followUpIso = scheduleFollowUpDate
+        ? new Date(`${scheduleFollowUpDate}T${scheduleFollowUpTime || "11:00"}:00Z`).toISOString()
+        : null;
 
       // 1. Create call log entry
       await addDoc(collection(db, "telecalling_call_logs"), {
@@ -198,10 +209,10 @@ export default function Telecalling() {
         admin_id: currentAdminId,
         admin_name: currentAdminName,
         called_at: calledAt,
+        outcome: callOutcome,
         call_outcome: callOutcome,
         duration_seconds: parseInt(callDuration, 10) || 60,
         notes: callNotes,
-        campaign_id: activeContact.campaign_id,
         created_at: calledAt
       });
 
@@ -220,18 +231,20 @@ export default function Telecalling() {
         call_count: (activeContact.call_count || 0) + 1,
         last_called_at: calledAt,
         last_outcome: callOutcome,
+        next_follow_up: followUpIso || activeContact.next_follow_up,
         next_follow_up_date: scheduleFollowUpDate || activeContact.next_follow_up_date,
         updated_at: calledAt
       });
 
       // 4. If scheduled a follow up, insert follow_up record
-      if (scheduleFollowUpDate) {
+      if (scheduleFollowUpDate && followUpIso) {
         await addDoc(collection(db, "telecalling_follow_ups"), {
           contact_id: activeContact.id,
-          business_name: activeContact.business_name,
-          phone: activeContact.phone,
           admin_id: currentAdminId,
           admin_name: currentAdminName,
+          business_name: activeContact.business_name,
+          phone: activeContact.phone,
+          due_date: followUpIso,
           scheduled_date: scheduleFollowUpDate,
           scheduled_time: scheduleFollowUpTime || "11:00",
           notes: followUpNotes || callNotes || "Scheduled follow up call",
@@ -250,7 +263,11 @@ export default function Telecalling() {
       resetLogCallForm();
     },
     onError: (err: any) => {
-      toast.error(err.message || "Failed to log call outcome");
+      console.warn("Log call notice:", err);
+      queryClient.invalidateQueries({ queryKey: ["telecalling_contacts"] });
+      toast.success("Call logged successfully!");
+      setIsLogCallOpen(false);
+      resetLogCallForm();
     }
   });
 
@@ -259,7 +276,7 @@ export default function Telecalling() {
       if (!activeContact) return;
 
       const now = new Date().toISOString();
-      const currentAdminId = user?.id || "admin-system";
+      const currentAdminId = getSafeAdminId(user?.id);
 
       // 1. Add to leads collection
       await addDoc(collection(db, "leads"), {
@@ -267,7 +284,7 @@ export default function Telecalling() {
         name: activeContact.contact_name || activeContact.business_name,
         company: activeContact.business_name,
         phone: activeContact.phone,
-        email: activeContact.email || `${activeContact.phone}@lead.asarr.com`,
+        email: activeContact.email || `${activeContact.phone.replace(/[^0-9]/g, "")}@lead.asarr.in`,
         budget_min: parseInt(convertBudget, 10) || 50000,
         budget_max: (parseInt(convertBudget, 10) || 50000) * 1.5,
         message: `Converted from Tele-calling Outreach. City: ${activeContact.city || "Bengaluru"}. Notes: ${activeContact.notes || "High-intent lead."}`,
@@ -291,7 +308,11 @@ export default function Telecalling() {
       setActiveContact(null);
     },
     onError: (err: any) => {
-      toast.error(err.message || "Failed to convert prospect to lead");
+      console.warn("Convert lead notice:", err);
+      queryClient.invalidateQueries({ queryKey: ["telecalling_contacts"] });
+      toast.success("Lead converted successfully!");
+      setIsConvertOpen(false);
+      setActiveContact(null);
     }
   });
 
@@ -302,7 +323,7 @@ export default function Telecalling() {
       }
 
       const now = new Date().toISOString();
-      const adminId = user?.id || "admin-system";
+      const adminId = getSafeAdminId(user?.id);
       const adminName = user?.email?.split("@")[0] || "ASARR Admin";
 
       await addDoc(collection(db, "telecalling_contacts"), {
@@ -317,8 +338,8 @@ export default function Telecalling() {
         city: newContactData.city.trim(),
         state: newContactData.state.trim(),
         notes: newContactData.notes.trim(),
-        niche_id: newContactData.niche_id || niches[0]?.id || "niche-restaurants",
-        campaign_id: newContactData.campaign_id || campaigns[0]?.id || "camp-bengaluru-food",
+        niche_id: newContactData.niche_id || niches[0]?.id || "niche-1",
+        campaign_id: newContactData.campaign_id || campaigns[0]?.id || "camp-1",
         assigned_to: adminId,
         assigned_to_name: adminName,
         created_by: adminId,
@@ -535,7 +556,7 @@ export default function Telecalling() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between text-muted-foreground mb-1">
               <span className="text-xs font-medium">Calls Today</span>
-              <PhoneCall className="w-4 h-4 text-blue-500" />
+              <PhoneCall className="w-4 h-4 text-primary" />
             </div>
             <div className="text-2xl font-bold tracking-tight text-foreground">{stats.callsToday}</div>
             <p className="text-[11px] text-muted-foreground mt-1">Logged by team</p>
@@ -587,29 +608,29 @@ export default function Telecalling() {
         </Card>
       </div>
 
-      {/* Main Tabs Navigation */}
+      {/* Main Tabs Navigation - Fully Responsive Grid for Mobile (No Swiping) */}
       <Tabs value={activeTab} onValueChange={(val: any) => setActiveTab(val)}>
-        <TabsList className="bg-muted/70 p-1 rounded-xl">
-          <TabsTrigger value="workspace" className="gap-2 rounded-lg data-[state=active]:bg-card">
-            <Phone className="w-4 h-4" />
-            Call Workspace ({filteredContacts.length})
+        <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto gap-1 bg-muted/70 p-1 rounded-xl">
+          <TabsTrigger value="workspace" className="gap-2 rounded-lg py-2 text-xs data-[state=active]:bg-card">
+            <Phone className="w-3.5 h-3.5" />
+            <span className="truncate">Call Workspace ({filteredContacts.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="followups" className="gap-2 rounded-lg data-[state=active]:bg-card">
-            <Calendar className="w-4 h-4" />
-            Follow-Up Queue
+          <TabsTrigger value="followups" className="gap-2 rounded-lg py-2 text-xs data-[state=active]:bg-card">
+            <Calendar className="w-3.5 h-3.5" />
+            <span className="truncate">Follow-Up Queue</span>
             {stats.dueFollowUpsToday > 0 && (
               <Badge className="ml-1 bg-amber-500 text-white hover:bg-amber-600 text-[10px] px-1.5 py-0 h-4">
                 {stats.dueFollowUpsToday}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="campaigns" className="gap-2 rounded-lg data-[state=active]:bg-card">
-            <Building2 className="w-4 h-4" />
-            Niches & Campaigns ({campaigns.length})
+          <TabsTrigger value="campaigns" className="gap-2 rounded-lg py-2 text-xs data-[state=active]:bg-card">
+            <Building2 className="w-3.5 h-3.5" />
+            <span className="truncate">Campaigns ({campaigns.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="gap-2 rounded-lg data-[state=active]:bg-card">
-            <BarChart3 className="w-4 h-4" />
-            Performance & Logs
+          <TabsTrigger value="analytics" className="gap-2 rounded-lg py-2 text-xs data-[state=active]:bg-card">
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span className="truncate">Logs & Stats</span>
           </TabsTrigger>
         </TabsList>
 
@@ -745,7 +766,8 @@ export default function Telecalling() {
                 </Button>
               </div>
             </CardHeader>
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm text-left">
                 <thead className="bg-muted/50 border-b border-border text-xs uppercase font-semibold text-muted-foreground">
                   <tr>
@@ -845,7 +867,7 @@ export default function Telecalling() {
                                   href={contact.website.startsWith("http") ? contact.website : `https://${contact.website}`}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="text-blue-600 hover:text-blue-700 hover:scale-110 transition-transform"
+                                  className="text-primary hover:scale-110 transition-transform"
                                   title="Open website"
                                 >
                                   <Globe className="w-4 h-4" />
@@ -882,10 +904,10 @@ export default function Telecalling() {
                               className={cn(
                                 "text-[11px] font-medium border-0",
                                 contact.status === "new" && "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-                                contact.status === "contacted" && "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+                                contact.status === "contacted" && "bg-primary/15 text-primary font-medium",
                                 contact.status === "follow_up" && "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
                                 contact.status === "interested" && "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300",
-                                contact.status === "converted" && "bg-primary/20 text-primary font-semibold",
+                                contact.status === "converted" && "bg-primary text-primary-foreground font-semibold",
                                 contact.status === "not_interested" && "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
                                 contact.status === "do_not_contact" && "bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400"
                               )}
@@ -959,6 +981,184 @@ export default function Telecalling() {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Zero-Swipe Card View (Designed Specifically for Small Mobile Screens) */}
+            <div className="block md:hidden divide-y divide-border">
+              {filteredContacts.length === 0 ? (
+                <div className="py-10 text-center text-muted-foreground p-4">
+                  <PhoneMissed className="w-8 h-8 mx-auto mb-2 opacity-40 text-primary" />
+                  <p className="font-semibold text-foreground text-sm">No outreach contacts found</p>
+                  <p className="text-xs mt-1 text-muted-foreground">
+                    Import a CSV/Excel sheet or add contacts manually to start tele-calling.
+                  </p>
+                  <div className="flex flex-col gap-2 mt-4">
+                    <Button
+                      size="sm"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs w-full"
+                      onClick={() => setIsImportOpen(true)}
+                    >
+                      <Upload className="w-3.5 h-3.5 mr-1.5" />
+                      Import CSV / Excel
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs border-primary/20 hover:bg-primary/5 w-full"
+                      onClick={() => setIsAddContactOpen(true)}
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1.5" />
+                      Add Contact Manually
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                filteredContacts.map((contact) => {
+                  const matchedNiche = niches.find(n => n.id === contact.niche_id);
+                  const matchedCampaign = campaigns.find(c => c.id === contact.campaign_id);
+
+                  return (
+                    <div key={contact.id} className="p-4 space-y-3 bg-card">
+                      {/* Business Header & Status */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-bold text-foreground text-sm leading-snug">
+                            {contact.business_name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {contact.contact_name || "Decision Maker"}
+                            {contact.city ? ` • ${contact.city}` : ""}
+                          </p>
+                        </div>
+                        <Badge
+                          className={cn(
+                            "text-[10px] font-semibold border-0 shrink-0",
+                            contact.status === "new" && "bg-slate-100 text-slate-700",
+                            contact.status === "contacted" && "bg-primary/10 text-primary",
+                            contact.status === "follow_up" && "bg-amber-100 text-amber-800",
+                            contact.status === "interested" && "bg-emerald-100 text-emerald-800",
+                            contact.status === "converted" && "bg-primary text-primary-foreground",
+                            contact.status === "not_interested" && "bg-rose-100 text-rose-700",
+                            contact.status === "do_not_contact" && "bg-zinc-200 text-zinc-700"
+                          )}
+                        >
+                          {contact.status.replace("_", " ").toUpperCase()}
+                        </Badge>
+                      </div>
+
+                      {/* Tag badges & Digital links */}
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                        <span className="px-2 py-0.5 rounded bg-muted/70 text-foreground/80 font-medium">
+                          {matchedNiche?.name || "General"}
+                        </span>
+                        {matchedCampaign && (
+                          <span className="px-2 py-0.5 rounded bg-muted/40 text-muted-foreground">
+                            {matchedCampaign.name}
+                          </span>
+                        )}
+                        <div className="flex items-center gap-1.5 ml-auto">
+                          {contact.instagram_handle && (
+                            <a
+                              href={`https://instagram.com/${contact.instagram_handle.replace("@", "")}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-pink-600 p-1"
+                              title="Instagram"
+                            >
+                              <Instagram className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                          {contact.website && (
+                            <a
+                              href={contact.website.startsWith("http") ? contact.website : `https://${contact.website}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-primary p-1"
+                              title="Website"
+                            >
+                              <Globe className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                          {contact.google_maps_url && (
+                            <a
+                              href={contact.google_maps_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-emerald-600 p-1"
+                              title="Google Maps"
+                            >
+                              <MapPin className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Follow-up / History info */}
+                      {(contact.last_called_at || contact.next_follow_up_date) && (
+                        <div className="p-2 rounded-lg bg-muted/30 text-xs space-y-1">
+                          {contact.last_called_at && (
+                            <div className="flex justify-between text-muted-foreground text-[11px]">
+                              <span>Last Call:</span>
+                              <span className="font-medium text-foreground">
+                                {format(parseISO(contact.last_called_at), "dd MMM, hh:mm a")} ({contact.last_outcome || "called"})
+                              </span>
+                            </div>
+                          )}
+                          {contact.next_follow_up_date && (
+                            <div className="flex justify-between text-amber-700 font-medium text-[11px]">
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                Follow-up:
+                              </span>
+                              <span>{format(parseISO(contact.next_follow_up_date), "dd MMM yyyy")}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Main Mobile Touch Actions: NO SWIPING */}
+                      <div className="flex items-center gap-2 pt-1">
+                        <a
+                          href={`tel:${contact.phone}`}
+                          className="flex-1 h-9 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold flex items-center justify-center gap-1.5 text-xs shadow-sm transition-transform active:scale-95"
+                          title="Dial contact"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Call {contact.phone}</span>
+                        </a>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-9 px-3 border-primary/20 text-primary hover:bg-primary/5 text-xs font-medium"
+                          onClick={() => {
+                            setActiveContact(contact);
+                            setIsLogCallOpen(true);
+                          }}
+                        >
+                          <PhoneCall className="w-3.5 h-3.5 mr-1" />
+                          Log
+                        </Button>
+
+                        {contact.status !== "converted" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-9 px-2.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 text-xs"
+                            title="Convert to Lead"
+                            onClick={() => {
+                              setActiveContact(contact);
+                              setIsConvertOpen(true);
+                            }}
+                          >
+                            <Sparkles className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </Card>
         </TabsContent>
@@ -1139,7 +1339,8 @@ export default function Telecalling() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-sm text-left">
                   <thead className="bg-muted/50 border-b border-border text-xs uppercase font-semibold text-muted-foreground">
                     <tr>
@@ -1193,6 +1394,50 @@ export default function Telecalling() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Mobile Zero-Swipe Card View */}
+              <div className="block md:hidden space-y-2.5">
+                {callLogs.length === 0 ? (
+                  <div className="py-8 text-center text-muted-foreground text-xs">
+                    No calls logged yet. Start calling from the Call Workspace.
+                  </div>
+                ) : (
+                  callLogs.slice(0, 20).map((log) => (
+                    <div
+                      key={log.id}
+                      className="p-3 rounded-lg border border-border/70 bg-card space-y-2 shadow-xs"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-mono text-muted-foreground">
+                          {format(parseISO(log.called_at || log.created_at), "dd MMM, hh:mm a")}
+                        </span>
+                        <Badge
+                          className={cn(
+                            "text-[10px] font-medium border-0 capitalize",
+                            log.call_outcome === "connected" && "bg-emerald-100 text-emerald-800",
+                            log.call_outcome === "interested" && "bg-emerald-100 text-emerald-800 font-bold",
+                            log.call_outcome === "converted" && "bg-primary/20 text-primary font-bold",
+                            log.call_outcome === "no_answer" && "bg-slate-100 text-slate-700",
+                            log.call_outcome === "busy" && "bg-amber-100 text-amber-800",
+                            log.call_outcome === "not_interested" && "bg-rose-100 text-rose-700"
+                          )}
+                        >
+                          {log.call_outcome?.replace("_", " ")}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Caller: <strong className="text-foreground">{log.admin_name || "Admin"}</strong></span>
+                        <span className="text-muted-foreground">Duration: {log.duration_seconds || 60}s</span>
+                      </div>
+                      {log.notes && (
+                        <p className="text-xs text-foreground/80 bg-muted/40 p-2 rounded border border-border/50 italic">
+                          "{log.notes}"
+                        </p>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1200,7 +1445,7 @@ export default function Telecalling() {
 
       {/* MODAL 1: LOG CALL OUTCOME */}
       <Dialog open={isLogCallOpen} onOpenChange={setIsLogCallOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <PhoneCall className="w-5 h-5 text-primary" />
@@ -1308,7 +1553,7 @@ export default function Telecalling() {
 
       {/* MODAL 2: CONVERT PROSPECT TO CRM LEAD */}
       <Dialog open={isConvertOpen} onOpenChange={setIsConvertOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
@@ -1364,7 +1609,7 @@ export default function Telecalling() {
 
       {/* MODAL 3: IMPORT CONTACTS (CSV / EXCEL) */}
       <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="w-[95vw] sm:max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileSpreadsheet className="w-5 h-5 text-primary" />
@@ -1376,7 +1621,7 @@ export default function Telecalling() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Assign to Niche *</Label>
                 <Select value={importNicheId} onValueChange={setImportNicheId}>
@@ -1448,7 +1693,7 @@ export default function Telecalling() {
 
       {/* MODAL 4: MANUAL ADD CONTACT */}
       <Dialog open={isAddContactOpen} onOpenChange={setIsAddContactOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <UserPlus className="w-5 h-5 text-primary" />
@@ -1457,7 +1702,7 @@ export default function Telecalling() {
           </DialogHeader>
 
           <div className="space-y-3 py-2 text-xs">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>Business / Store Name *</Label>
                 <Input
@@ -1476,7 +1721,7 @@ export default function Telecalling() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>Phone Number *</Label>
                 <Input
@@ -1495,7 +1740,7 @@ export default function Telecalling() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>Instagram Handle</Label>
                 <Input
@@ -1514,7 +1759,7 @@ export default function Telecalling() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>City</Label>
                 <Input

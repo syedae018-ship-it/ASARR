@@ -66,7 +66,7 @@ export function PortalSidebar({ mobileOpen = false, onMobileClose }: PortalSideb
             {!collapsed && (
               <div className="flex flex-col">
                 <span className="font-bold text-sidebar-foreground text-base tracking-tight">
-                  ASARR
+                  ASARR OS
                 </span>
                 <span className="text-[10px] uppercase tracking-wider font-semibold text-primary/90">
                   Client Portal
